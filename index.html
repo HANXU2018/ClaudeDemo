@@ -560,18 +560,247 @@
             }
         }
 
+        /* 版本选择器样式 */
+        .version-selector {
+            margin-bottom: 30px;
+            padding: 30px 20px;
+        }
+
+        .version-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .version-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .version-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .version-card:hover::before {
+            left: 100%;
+        }
+
+        .version-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .version-card.featured {
+            background: linear-gradient(135deg, rgba(255, 154, 158, 0.15), rgba(254, 207, 239, 0.15));
+            border-color: rgba(255, 154, 158, 0.3);
+            box-shadow: 0 8px 24px rgba(255, 154, 158, 0.2);
+        }
+
+        .version-card.featured:hover {
+            box-shadow: 0 16px 40px rgba(255, 154, 158, 0.4);
+        }
+
+        .version-card.legacy {
+            opacity: 0.7;
+        }
+
+        .version-icon {
+            font-size: 1.8em;
+            flex-shrink: 0;
+        }
+
+        .version-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .version-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .version-subtitle {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .version-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.7em;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tag-safe {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+        }
+
+        .tag-health {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+        }
+
+        .tag-recommended {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .tag-innovative {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .tag-future {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            color: white;
+        }
+
+        .tag-ai {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+        }
+
+        .tag-classic {
+            background: linear-gradient(135deg, #64748b, #475569);
+            color: white;
+        }
+
+        .tag-premium {
+            background: linear-gradient(135deg, #eab308, #ca8a04);
+            color: white;
+        }
+
+        .tag-stable {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+            }
+            50% { 
+                box-shadow: 0 0 16px rgba(245, 158, 11, 0.8);
+            }
+        }
+
+        .online-badge {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .online-badge a {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            text-decoration: none;
+            border-radius: 16px;
+            font-size: 0.75em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .online-badge a:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .design-philosophy {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .design-philosophy p {
+            margin: 8px 0;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .design-philosophy p:first-child {
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
         /* 触摸设备优化 */
         @media (hover: none) and (pointer: coarse) {
             .music-item:hover::before,
-            .btn:hover::before {
+            .btn:hover::before,
+            .version-card:hover::before {
                 left: -100%;
             }
             
             .music-item:hover,
             .btn-primary:hover,
             .btn-secondary:hover,
-            .btn-danger:hover {
+            .btn-danger:hover,
+            .version-card:hover {
                 transform: none;
+            }
+        }
+
+        /* 版本卡片响应式 */
+        @media screen and (max-width: 768px) {
+            .version-card {
+                padding: 14px 16px;
+                gap: 12px;
+            }
+            
+            .version-icon {
+                font-size: 1.5em;
+            }
+            
+            .version-title {
+                font-size: 1em;
+            }
+            
+            .version-subtitle {
+                font-size: 0.8em;
+                margin-bottom: 6px;
+            }
+            
+            .online-badge a {
+                padding: 4px 8px;
+                font-size: 0.7em;
             }
         }
     </style>
@@ -580,7 +809,92 @@
     <div class="container">
         <div class="header">
             <h1>🎵 小噪音</h1>
-            <p>专业的白噪音播放器，支持多音轨混合播放</p>
+            <p>情绪调节与音频体验平台 - 让心跳慢下来</p>
+        </div>
+
+        <!-- 版本选择区域 -->
+        <div class="version-selector glass-card">
+            <h2 style="margin-bottom: 20px; font-size: 1.3em;">🎯 体验不同设计方案</h2>
+            <div class="version-grid">
+                <div class="version-card" onclick="window.open('index_progressive.html', '_blank')">
+                    <div class="version-icon">🌱</div>
+                    <div class="version-content">
+                        <div class="version-title">渐进式优化</div>
+                        <div class="version-subtitle">保持熟悉界面，融入健康监测</div>
+                        <div class="version-tags">
+                            <span class="tag tag-safe">安全</span>
+                            <span class="tag tag-health">健康</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="version-card featured" onclick="window.open('index_radical_new.html', '_blank')">
+                    <div class="version-icon">⭐</div>
+                    <div class="version-content">
+                        <div class="version-title">激进重构</div>
+                        <div class="version-subtitle">情绪调节工具，呼吸引导设计</div>
+                        <div class="version-tags">
+                            <span class="tag tag-recommended">推荐</span>
+                            <span class="tag tag-innovative">创新</span>
+                        </div>
+                    </div>
+                    <div class="online-badge">
+                        <a href="https://hanxu2018.github.io/ClaudeDemo/index_radical_new.html" target="_blank">
+                            🌐 在线
+                        </a>
+                    </div>
+                </div>
+
+                <div class="version-card" onclick="window.open('index_idealistic.html', '_blank')">
+                    <div class="version-icon">🚀</div>
+                    <div class="version-content">
+                        <div class="version-title">理想主义版本</div>
+                        <div class="version-subtitle">未来科技，神经网络美学</div>
+                        <div class="version-tags">
+                            <span class="tag tag-future">未来</span>
+                            <span class="tag tag-ai">AI</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="version-card" onclick="window.open('index3.html', '_blank')">
+                    <div class="version-icon">🎼</div>
+                    <div class="version-content">
+                        <div class="version-title">现代播放器</div>
+                        <div class="version-subtitle">传统音乐播放器界面</div>
+                        <div class="version-tags">
+                            <span class="tag tag-classic">经典</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="version-card" onclick="window.open('index_vision_ultimate.html', '_blank')">
+                    <div class="version-icon">👁️</div>
+                    <div class="version-content">
+                        <div class="version-title">终极愿景</div>
+                        <div class="version-subtitle">高级视觉设计与交互</div>
+                        <div class="version-tags">
+                            <span class="tag tag-premium">高端</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="version-card legacy" onclick="window.open('index2_fixed.html', '_blank')">
+                    <div class="version-icon">🔧</div>
+                    <div class="version-content">
+                        <div class="version-title">修复版本</div>
+                        <div class="version-subtitle">解决编码问题的稳定版</div>
+                        <div class="version-tags">
+                            <span class="tag tag-stable">稳定</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="design-philosophy">
+                <p><strong>设计理念:</strong> 用户在使用3分钟内，心跳应该慢下来</p>
+                <p>从"音乐播放器"到"情绪调节工具"的完美转变</p>
+            </div>
         </div>
 
         <div class="global-controls glass-card">
