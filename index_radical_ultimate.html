@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小噪音 - 终极版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: #000000;
+            color: #00ffff;
+            height: 100vh;
+            overflow: hidden;
+            cursor: none;
+            position: relative;
+        }
+
+        /* 主容器 */
+        .matrix-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(72, 219, 251, 0.4) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0a 0%, #000000 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* 实时音频可视化Canvas */
+        .audio-visualizer-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 粒子系统背景 */
+        .particle-system {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* 中央控制核心 */
+        .control-core {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform-style: preserve-3d;
+        }
+
+        .sound-hologram {
+            width: 300px;
+            height: 300px;
+            position: relative;
+            margin-bottom: 40px;
+            cursor: pointer;
+        }
+
+        .hologram-ring {
+            position: absolute;
+            border: 2px solid rgba(0, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: ring-rotate 8s linear infinite;
+        }
+
+        .ring-1 { width: 100%; height: 100%; top: 0; left: 0; animation-duration: 8s; }
+        .ring-2 { width: 80%; height: 80%; top: 10%; left: 10%; animation-duration: 12s; animation-direction: reverse; }
+        .ring-3 { width: 60%; height: 60%; top: 20%; left: 20%; animation-duration: 6s; }
+
+        @keyframes ring-rotate {
+            0% { transform: rotateZ(0deg) rotateY(0deg); }
+            100% { transform: rotateZ(360deg) rotateY(360deg); }
+        }
+
+        .hologram-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.3), transparent);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+        }
+
+        .sound-emoji-3d {
+            font-size: 3em;
+            margin-bottom: 5px;
+            animation: hologram-float 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.8));
+        }
+
+        @keyframes hologram-float {
+            0%, 100% { 
+                transform: translateY(0) scale(1) rotateY(0deg);
+                filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.8));
+            }
+            25% { 
+                transform: translateY(-5px) scale(1.05) rotateY(90deg);
+                filter: drop-shadow(0 0 15px rgba(255, 0, 255, 0.8));
+            }
+            50% { 
+                transform: translateY(0) scale(1.1) rotateY(180deg);
+                filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.8));
+            }
+            75% { 
+                transform: translateY(-5px) scale(1.05) rotateY(270deg);
+                filter: drop-shadow(0 0 15px rgba(255, 255, 0, 0.8));
+            }
+        }
+
+        .sound-title-3d {
+            font-size: 2em;
+            font-weight: 300;
+            text-shadow: 
+                0 0 10px currentColor,
+                0 0 20px currentColor,
+                0 0 30px currentColor;
+            animation: title-glow 3s ease-in-out infinite;
+            letter-spacing: 0.1em;
+        }
+
+        @keyframes title-glow {
+            0%, 100% { 
+                color: #00ffff; 
+                text-shadow: 
+                    0 0 10px #00ffff,
+                    0 0 20px #00ffff,
+                    0 0 30px #00ffff;
+            }
+            25% { 
+                color: #ff00ff; 
+                text-shadow: 
+                    0 0 10px #ff00ff,
+                    0 0 20px #ff00ff,
+                    0 0 30px #ff00ff;
+            }
+            50% { 
+                color: #00ff00; 
+                text-shadow: 
+                    0 0 10px #00ff00,
+                    0 0 20px #00ff00,
+                    0 0 30px #00ff00;
+            }
+            75% { 
+                color: #ffff00; 
+                text-shadow: 
+                    0 0 10px #ffff00,
+                    0 0 20px #ffff00,
+                    0 0 30px #ffff00;
+            }
+        }
+
+        /* HUD界面 */
+        .hud-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .hud-corner {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(0, 255, 255, 0.6);
+        }
+
+        .hud-top-left { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+        .hud-top-right { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+        .hud-bottom-left { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+        .hud-bottom-right { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+        /* 实时数据显示 */
+        .data-streams {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            font-size: 0.9em;
+            font-family: 'Monaco', monospace;
+        }
+
+        .data-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.8;
+            animation: data-flicker 2s ease-in-out infinite;
+        }
+
+        .data-label {
+            color: rgba(0, 255, 255, 0.7);
+            min-width: 100px;
+        }
+
+        .data-value {
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 5px currentColor;
+        }
+
+        .data-bar {
+            width: 100px;
+            height: 4px;
+            background: rgba(0, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #00ff00);
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        @keyframes data-flicker {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* 神经网络可视化 */
+        .neural-network {
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            width: 200px;
+            height: 150px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .neural-node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ffff;
+            animation: neural-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes neural-pulse {
+            0%, 100% { 
+                opacity: 0.6; 
+                transform: scale(1);
+                box-shadow: 0 0 5px #00ffff;
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.5);
+                box-shadow: 0 0 15px #00ffff;
+            }
+        }
+
+        /* 时间轴显示 */
+        .timeline-display {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border-radius: 25px;
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            backdrop-filter: blur(15px);
+        }
+
+        .time-block {
+            text-align: center;
+        }
+
+        .time-value {
+            font-size: 1.5em;
+            font-weight: 300;
+            color: #00ffff;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .time-label {
+            font-size: 0.7em;
+            color: rgba(0, 255, 255, 0.6);
+            margin-top: 2px;
+            letter-spacing: 0.1em;
+        }
+
+        /* 手势控制区域可视化 */
+        .gesture-zones {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 8;
+            pointer-events: all;
+        }
+
+        .gesture-indicator {
+            position: absolute;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .gesture-indicator.active {
+            opacity: 0.3;
+        }
+
+        .gesture-left {
+            left: 0;
+            top: 0;
+            width: 20%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255, 0, 0, 0.3), transparent);
+        }
+
+        .gesture-right {
+            right: 0;
+            top: 0;
+            width: 20%;
+            height: 100%;
+            background: linear-gradient(270deg, rgba(0, 255, 0, 0.3), transparent);
+        }
+
+        .gesture-up {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: linear-gradient(180deg, rgba(0, 0, 255, 0.3), transparent);
+        }
+
+        .gesture-down {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: linear-gradient(0deg, rgba(255, 255, 0, 0.3), transparent);
+        }
+
+        /* 音频列表 - 全息界面 */
+        .hologram-list {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: 
+                linear-gradient(45deg, transparent 40%, rgba(0, 255, 255, 0.05) 50%, transparent 60%),
+                radial-gradient(circle, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hologram-list.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .list-title-hologram {
+            font-size: 3em;
+            margin-bottom: 40px;
+            text-align: center;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ffff);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 3s ease-in-out infinite;
+            letter-spacing: 0.2em;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .sound-grid-3d {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 600px;
+            perspective: 1000px;
+        }
+
+        .sound-card-3d {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            backdrop-filter: blur(10px);
+        }
+
+        .sound-card-3d:hover {
+            transform: rotateY(10deg) rotateX(5deg) translateZ(20px);
+            border-color: rgba(0, 255, 255, 0.8);
+            box-shadow: 
+                0 10px 30px rgba(0, 255, 255, 0.3),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        .sound-card-3d.active {
+            background: rgba(0, 255, 255, 0.3);
+            border-color: rgba(0, 255, 255, 1);
+            animation: card-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes card-pulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(0, 255, 255, 0.8);
+            }
+        }
+
+        .card-emoji-3d {
+            font-size: 3em;
+            margin-bottom: 10px;
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+        }
+
+        .card-title-3d {
+            font-size: 1.1em;
+            font-weight: 400;
+            color: #00ffff;
+            margin-bottom: 5px;
+        }
+
+        .card-duration-3d {
+            font-size: 0.8em;
+            color: rgba(0, 255, 255, 0.6);
+        }
+
+        /* 音量控制 - 3D界面 */
+        .volume-hologram {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 150;
+        }
+
+        .volume-hologram.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .volume-sphere {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 3px solid rgba(0, 255, 255, 0.6);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.1), transparent);
+            animation: sphere-rotate 10s linear infinite;
+        }
+
+        @keyframes sphere-rotate {
+            0% { transform: rotateY(0deg) rotateX(0deg); }
+            25% { transform: rotateY(90deg) rotateX(15deg); }
+            50% { transform: rotateY(180deg) rotateX(0deg); }
+            75% { transform: rotateY(270deg) rotateX(-15deg); }
+            100% { transform: rotateY(360deg) rotateX(0deg); }
+        }
+
+        .volume-rings {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .volume-ring {
+            position: absolute;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: ring-pulse 2s ease-in-out infinite;
+        }
+
+        .ring-inner { width: 60%; height: 60%; top: 20%; left: 20%; animation-delay: 0s; }
+        .ring-outer { width: 120%; height: 120%; top: -10%; left: -10%; animation-delay: 0.5s; }
+
+        @keyframes ring-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: scale(1.1);
+                opacity: 0.6;
+            }
+        }
+
+        .volume-text-3d {
+            font-size: 3em;
+            font-weight: 300;
+            color: #00ffff;
+            text-shadow: 
+                0 0 20px #00ffff,
+                0 0 40px #00ffff;
+            z-index: 10;
+        }
+
+        /* 状态效果 */
+        .playing-effects {
+            animation: matrix-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes matrix-glow {
+            0%, 100% { 
+                filter: hue-rotate(0deg) brightness(1);
+            }
+            50% { 
+                filter: hue-rotate(180deg) brightness(1.2);
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .sound-grid-3d { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 15px;
+            }
+            .data-streams { 
+                font-size: 0.8em; 
+                left: 20px; 
+                top: 20px; 
+            }
+            .neural-network { 
+                width: 150px; 
+                height: 100px; 
+                right: 20px; 
+                top: 20px; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-container" id="mainContainer">
+        <canvas class="audio-visualizer-canvas" id="audioCanvas"></canvas>
+        <div class="particle-system" id="particleSystem"></div>
+        
+        <!-- HUD界面 -->
+        <div class="hud-overlay">
+            <div class="hud-corner hud-top-left"></div>
+            <div class="hud-corner hud-top-right"></div>
+            <div class="hud-corner hud-bottom-left"></div>
+            <div class="hud-corner hud-bottom-right"></div>
+        </div>
+
+        <!-- 实时数据流 -->
+        <div class="data-streams">
+            <div class="data-line">
+                <span class="data-label">AUDIO_FREQ:</span>
+                <span class="data-value" id="freqValue">440Hz</span>
+                <div class="data-bar"><div class="data-bar-fill" id="freqBar"></div></div>
+            </div>
+            <div class="data-line">
+                <span class="data-label">NEURAL_SYNC:</span>
+                <span class="data-value" id="syncValue">87%</span>
+                <div class="data-bar"><div class="data-bar-fill" id="syncBar"></div></div>
+            </div>
+            <div class="data-line">
+                <span class="data-label">IMMERSION:</span>
+                <span class="data-value" id="immersionValue">92%</span>
+                <div class="data-bar"><div class="data-bar-fill" id="immersionBar"></div></div>
+            </div>
+        </div>
+
+        <!-- 神经网络可视化 -->
+        <div class="neural-network" id="neuralNetwork">
+            <!-- 动态生成节点 -->
+        </div>
+
+        <!-- 中央控制核心 -->
+        <div class="control-core">
+            <div class="sound-hologram" id="soundHologram">
+                <div class="hologram-ring ring-1"></div>
+                <div class="hologram-ring ring-2"></div>
+                <div class="hologram-ring ring-3"></div>
+                <div class="hologram-center">
+                    <span class="sound-emoji-3d" id="soundEmoji3D">📺</span>
+                </div>
+            </div>
+            <div class="sound-title-3d" id="soundTitle3D">新闻播报</div>
+        </div>
+
+        <!-- 时间轴显示 -->
+        <div class="timeline-display">
+            <div class="time-block">
+                <div class="time-value" id="currentTime">--:--</div>
+                <div class="time-label">LOCAL TIME</div>
+            </div>
+            <div class="time-block">
+                <div class="time-value" id="playTime">00:00:00</div>
+                <div class="time-label">PLAY TIME</div>
+            </div>
+            <div class="time-block">
+                <div class="time-value" id="sessionTime">00:00</div>
+                <div class="time-label">SESSION</div>
+            </div>
+        </div>
+
+        <!-- 手势控制区域 -->
+        <div class="gesture-zones" id="gestureZones">
+            <div class="gesture-indicator gesture-left" id="gestureLeft"></div>
+            <div class="gesture-indicator gesture-right" id="gestureRight"></div>
+            <div class="gesture-indicator gesture-up" id="gestureUp"></div>
+            <div class="gesture-indicator gesture-down" id="gestureDown"></div>
+        </div>
+    </div>
+
+    <!-- 全息音频列表 -->
+    <div class="hologram-list" id="hologramList">
+        <div class="list-title-hologram">AUDIO MATRIX</div>
+        <div class="sound-grid-3d" id="soundGrid3D">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
+    <!-- 3D音量控制 -->
+    <div class="volume-hologram" id="volumeHologram">
+        <div class="volume-sphere">
+            <div class="volume-rings">
+                <div class="volume-ring ring-inner"></div>
+                <div class="volume-ring ring-outer"></div>
+            </div>
+            <div class="volume-text-3d" id="volumeText3D">50</div>
+        </div>
+    </div>
+
+    <script>
+        const sounds = [
+            { id: 'news', title: '新闻播报', emoji: '📺', url: './audio/news.mp3', duration: '7:17', freq: '220Hz' },
+            { id: 'xiaozhang', title: '领导讲话', emoji: '🎤', url: './audio/xiaozhang.mp3', duration: '9:02', freq: '180Hz' },
+            { id: 'white_noise', title: '白噪音', emoji: '📻', url: './audio/white_noise.mp3', duration: '1:00', freq: '1000Hz' },
+            { id: 'pink_noise', title: '粉噪音', emoji: '🌸', url: './audio/pink_noise.mp3', duration: '1:00', freq: '500Hz' },
+            { id: 'brown_noise', title: '棕噪音', emoji: '🤎', url: './audio/brown_noise.mp3', duration: '1:00', freq: '250Hz' },
+            { id: 'rain', title: '雨声', emoji: '🌧️', url: './audio/rain.mp3', duration: '1:00', freq: '800Hz' },
+            { id: 'ocean', title: '海浪', emoji: '🌊', url: './audio/ocean_waves.mp3', duration: '1:00', freq: '300Hz' },
+            { id: 'birds', title: '鸟鸣', emoji: '🐦', url: './audio/birds_chirping.mp3', duration: '1:00', freq: '2000Hz' },
+            { id: 'fire', title: '火焰', emoji: '🔥', url: './audio/fireplace.mp3', duration: '1:00', freq: '150Hz' }
+        ];
+
+        let currentIndex = 0;
+        let currentAudio = null;
+        let audioContext = null;
+        let analyser = null;
+        let dataArray = null;
+        let volume = 50;
+        let isPlaying = false;
+        let sessionStartTime = Date.now();
+        let totalPlayTime = 0;
+        let playStartTime = null;
+        let canvas, ctx;
+        let animationId;
+
+        // 手势控制
+        let touchStartPos = null;
+        let longPressTimer = null;
+        let gestureActive = false;
+
+        // 初始化
+        function init() {
+            setupCanvas();
+            setupAudioContext();
+            loadSound(currentIndex);
+            initNeuralNetwork();
+            initParticleSystem();
+            initGestures();
+            initTimers();
+            initSoundGrid();
+            startVisualization();
+            
+            // 3秒后自动播放
+            setTimeout(() => {
+                playCurrentSound();
+            }, 3000);
+        }
+
+        // 设置Canvas
+        function setupCanvas() {
+            canvas = document.getElementById('audioCanvas');
+            ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        // 设置音频上下文
+        function setupAudioContext() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+            } catch (e) {
+                console.warn('Web Audio API not supported');
+            }
+        }
+
+        // 加载声音
+        function loadSound(index) {
+            const sound = sounds[index];
+            
+            // 更新UI
+            document.getElementById('soundEmoji3D').textContent = sound.emoji;
+            document.getElementById('soundTitle3D').textContent = sound.title;
+            document.getElementById('freqValue').textContent = sound.freq;
+            
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // 创建新音频
+            currentAudio = new Audio(sound.url);
+            currentAudio.loop = true;
+            currentAudio.volume = volume / 100;
+            currentAudio.crossOrigin = 'anonymous';
+            
+            // 连接到音频分析器
+            if (audioContext && analyser) {
+                const source = audioContext.createMediaElementSource(currentAudio);
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+            }
+            
+            currentAudio.onplay = () => {
+                isPlaying = true;
+                playStartTime = Date.now();
+                updatePlayingState();
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            };
+            
+            currentAudio.onpause = () => {
+                isPlaying = false;
+                updatePlayingState();
+            };
+
+            updateSoundGrid();
+        }
+
+        // 播放当前声音
+        async function playCurrentSound() {
+            if (!currentAudio) return;
+            
+            try {
+                await currentAudio.play();
+            } catch (error) {
+                console.warn('播放失败:', error);
+            }
+        }
+
+        // 切换播放
+        function togglePlay() {
+            if (!currentAudio) return;
+            
+            if (isPlaying) {
+                currentAudio.pause();
+            } else {
+                playCurrentSound();
+            }
+        }
+
+        // 切换声音
+        function switchSound(direction) {
+            if (direction > 0) {
+                currentIndex = (currentIndex + 1) % sounds.length;
+            } else {
+                currentIndex = (currentIndex - 1 + sounds.length) % sounds.length;
+            }
+            
+            const wasPlaying = isPlaying;
+            loadSound(currentIndex);
+            
+            if (wasPlaying) {
+                setTimeout(() => playCurrentSound(), 100);
+            }
+        }
+
+        // 设置音量
+        function setVolume(newVolume) {
+            volume = Math.max(0, Math.min(100, newVolume));
+            
+            if (currentAudio) {
+                currentAudio.volume = volume / 100;
+            }
+            
+            document.getElementById('volumeText3D').textContent = Math.round(volume);
+        }
+
+        // 显示/隐藏音量控制
+        function toggleVolumeControl() {
+            const volumeHologram = document.getElementById('volumeHologram');
+            volumeHologram.classList.toggle('visible');
+        }
+
+        // 显示/隐藏音频列表
+        function toggleSoundList() {
+            const hologramList = document.getElementById('hologramList');
+            hologramList.classList.toggle('visible');
+        }
+
+        // 从列表选择声音
+        function selectSoundFromGrid(index) {
+            currentIndex = index;
+            loadSound(index);
+            
+            if (isPlaying) {
+                setTimeout(() => playCurrentSound(), 100);
+            }
+            
+            setTimeout(() => {
+                toggleSoundList();
+            }, 500);
+        }
+
+        // 初始化神经网络可视化
+        function initNeuralNetwork() {
+            const container = document.getElementById('neuralNetwork');
+            
+            for (let i = 0; i < 12; i++) {
+                const node = document.createElement('div');
+                node.className = 'neural-node';
+                node.style.left = (Math.random() * 180 + 10) + 'px';
+                node.style.top = (Math.random() * 130 + 10) + 'px';
+                node.style.animationDelay = (Math.random() * 2) + 's';
+                container.appendChild(node);
+            }
+        }
+
+        // 初始化粒子系统
+        function initParticleSystem() {
+            const container = document.getElementById('particleSystem');
+            
+            setInterval(() => {
+                if (isPlaying) {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'absolute';
+                    particle.style.width = '2px';
+                    particle.style.height = '2px';
+                    particle.style.background = '#00ffff';
+                    particle.style.borderRadius = '50%';
+                    particle.style.boxShadow = '0 0 6px #00ffff';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.top = window.innerHeight + 'px';
+                    particle.style.animation = 'particle-rise 5s linear forwards';
+                    
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.remove();
+                        }
+                    }, 5000);
+                }
+            }, 200);
+            
+            // 添加粒子上升动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes particle-rise {
+                    0% {
+                        transform: translateY(0) translateX(0);
+                        opacity: 0;
+                    }
+                    10% {
+                        opacity: 1;
+                    }
+                    90% {
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(-${window.innerHeight + 100}px) translateX(${Math.random() * 200 - 100}px);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // 初始化音频网格
+        function initSoundGrid() {
+            const container = document.getElementById('soundGrid3D');
+            container.innerHTML = sounds.map((sound, index) => `
+                <div class="sound-card-3d ${index === currentIndex ? 'active' : ''}" 
+                     onclick="selectSoundFromGrid(${index})">
+                    <span class="card-emoji-3d">${sound.emoji}</span>
+                    <div class="card-title-3d">${sound.title}</div>
+                    <div class="card-duration-3d">${sound.duration}</div>
+                </div>
+            `).join('');
+        }
+
+        // 更新音频网格
+        function updateSoundGrid() {
+            document.querySelectorAll('.sound-card-3d').forEach((card, index) => {
+                card.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        // 初始化计时器
+        function initTimers() {
+            setInterval(updateTimers, 1000);
+        }
+
+        // 更新计时器
+        function updateTimers() {
+            // 当前时间
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('zh-CN', { 
+                hour12: false, hour: '2-digit', minute: '2-digit' 
+            });
+
+            // 播放时间
+            if (isPlaying) {
+                totalPlayTime++;
+            }
+            const hours = Math.floor(totalPlayTime / 3600);
+            const minutes = Math.floor((totalPlayTime % 3600) / 60);
+            const seconds = totalPlayTime % 60;
+            document.getElementById('playTime').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            // 会话时间
+            const sessionTime = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const sessionMinutes = Math.floor(sessionTime / 60);
+            const sessionSeconds = sessionTime % 60;
+            document.getElementById('sessionTime').textContent = 
+                `${sessionMinutes.toString().padStart(2, '0')}:${sessionSeconds.toString().padStart(2, '0')}`;
+
+            // 更新实时数据
+            updateDataStreams();
+        }
+
+        // 更新数据流显示
+        function updateDataStreams() {
+            // 模拟数据变化
+            const syncValue = 85 + Math.sin(Date.now() / 1000) * 10;
+            const immersionValue = 90 + Math.cos(Date.now() / 1500) * 8;
+            
+            document.getElementById('syncValue').textContent = Math.round(syncValue) + '%';
+            document.getElementById('immersionValue').textContent = Math.round(immersionValue) + '%';
+            
+            document.getElementById('syncBar').style.width = syncValue + '%';
+            document.getElementById('immersionBar').style.width = immersionValue + '%';
+        }
+
+        // 更新播放状态
+        function updatePlayingState() {
+            const container = document.getElementById('mainContainer');
+            
+            if (isPlaying) {
+                container.classList.add('playing-effects');
+            } else {
+                container.classList.remove('playing-effects');
+            }
+        }
+
+        // 手势控制
+        function initGestures() {
+            const gestureZones = document.getElementById('gestureZones');
+            
+            // 触摸事件
+            gestureZones.addEventListener('touchstart', handleTouchStart);
+            gestureZones.addEventListener('touchmove', handleTouchMove);
+            gestureZones.addEventListener('touchend', handleTouchEnd);
+            
+            // 鼠标事件
+            gestureZones.addEventListener('mousedown', handleMouseDown);
+            gestureZones.addEventListener('mousemove', handleMouseMove);
+            gestureZones.addEventListener('mouseup', handleMouseUp);
+            
+            // 键盘事件
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            touchStartPos = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY,
+                time: Date.now()
+            };
+            
+            longPressTimer = setTimeout(() => {
+                toggleVolumeControl();
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 800);
+        }
+
+        function handleTouchMove(e) {
+            if (!touchStartPos) return;
+            e.preventDefault();
+            
+            const deltaX = e.touches[0].clientX - touchStartPos.x;
+            const deltaY = e.touches[0].clientY - touchStartPos.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (distance > 20) {
+                clearTimeout(longPressTimer);
+                showGestureIndicator(deltaX, deltaY);
+            }
+            
+            // 音量控制时的实时调节
+            if (document.getElementById('volumeHologram').classList.contains('visible')) {
+                const volumeChange = -deltaY / 3;
+                const newVolume = volume + volumeChange;
+                setVolume(newVolume);
+                touchStartPos.y = e.touches[0].clientY;
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchStartPos) return;
+            e.preventDefault();
+            
+            clearTimeout(longPressTimer);
+            hideGestureIndicators();
+            
+            const deltaX = e.changedTouches[0].clientX - touchStartPos.x;
+            const deltaY = e.changedTouches[0].clientY - touchStartPos.y;
+            const duration = Date.now() - touchStartPos.time;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (document.getElementById('volumeHologram').classList.contains('visible')) {
+                toggleVolumeControl();
+            } else if (document.getElementById('hologramList').classList.contains('visible')) {
+                // 列表界面中的手势
+            } else if (duration < 300 && distance < 30) {
+                // 单击
+                togglePlay();
+            } else if (distance > 50) {
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // 水平滑动
+                    switchSound(deltaX > 0 ? 1 : -1);
+                } else {
+                    // 垂直滑动
+                    if (deltaY < -50) {
+                        // 向上滑动 - 显示列表
+                        toggleSoundList();
+                    } else if (deltaY > 50) {
+                        // 向下滑动 - 音量控制
+                        toggleVolumeControl();
+                    }
+                }
+            }
+            
+            touchStartPos = null;
+        }
+
+        function handleMouseDown(e) {
+            touchStartPos = { x: e.clientX, y: e.clientY, time: Date.now() };
+        }
+
+        function handleMouseMove(e) {
+            if (!touchStartPos) return;
+            
+            const deltaX = e.clientX - touchStartPos.x;
+            const deltaY = e.clientY - touchStartPos.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (distance > 20) {
+                showGestureIndicator(deltaX, deltaY);
+            }
+        }
+
+        function handleMouseUp(e) {
+            if (!touchStartPos) return;
+            
+            hideGestureIndicators();
+            
+            const deltaX = e.clientX - touchStartPos.x;
+            const deltaY = e.clientY - touchStartPos.y;
+            const duration = Date.now() - touchStartPos.time;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (duration < 300 && distance < 30) {
+                togglePlay();
+            }
+            
+            touchStartPos = null;
+        }
+
+        function handleKeyDown(e) {
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'ArrowLeft':
+                    switchSound(-1);
+                    break;
+                case 'ArrowRight':
+                    switchSound(1);
+                    break;
+                case 'ArrowUp':
+                    setVolume(volume + 10);
+                    break;
+                case 'ArrowDown':
+                    setVolume(volume - 10);
+                    break;
+                case 'KeyL':
+                    toggleSoundList();
+                    break;
+                case 'KeyV':
+                    toggleVolumeControl();
+                    break;
+                case 'Escape':
+                    document.getElementById('hologramList').classList.remove('visible');
+                    document.getElementById('volumeHologram').classList.remove('visible');
+                    break;
+            }
+        }
+
+        // 显示手势指示器
+        function showGestureIndicator(deltaX, deltaY) {
+            hideGestureIndicators();
+            
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX > 0) {
+                    document.getElementById('gestureRight').classList.add('active');
+                } else {
+                    document.getElementById('gestureLeft').classList.add('active');
+                }
+            } else {
+                if (deltaY > 0) {
+                    document.getElementById('gestureDown').classList.add('active');
+                } else {
+                    document.getElementById('gestureUp').classList.add('active');
+                }
+            }
+        }
+
+        // 隐藏手势指示器
+        function hideGestureIndicators() {
+            document.querySelectorAll('.gesture-indicator').forEach(el => {
+                el.classList.remove('active');
+            });
+        }
+
+        // 开始可视化
+        function startVisualization() {
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (isPlaying && analyser && dataArray) {
+                    analyser.getByteFrequencyData(dataArray);
+                    drawAudioVisualization();
+                } else {
+                    drawIdleVisualization();
+                }
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // 绘制音频可视化
+        function drawAudioVisualization() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // 频谱环形显示
+            for (let i = 0; i < dataArray.length; i++) {
+                const angle = (i / dataArray.length) * Math.PI * 2;
+                const amplitude = dataArray[i] / 255;
+                const radius = 150 + amplitude * 100;
+                
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 2 + amplitude * 3, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${(i / dataArray.length) * 360}, 100%, ${50 + amplitude * 50}%)`;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = ctx.fillStyle;
+                ctx.fill();
+            }
+            
+            // 中心波形
+            ctx.beginPath();
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00ffff';
+            
+            for (let i = 0; i < dataArray.length; i++) {
+                const x = (i / dataArray.length) * canvas.width;
+                const y = centerY + (dataArray[i] / 255 - 0.5) * 200;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // 绘制待机可视化
+        function drawIdleVisualization() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const time = Date.now() * 0.001;
+            
+            // 同心圆效果
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 50 + i * 30 + Math.sin(time + i) * 20, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 - i * 0.05})`;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ffff';
+                ctx.stroke();
+            }
+        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 页面可见性变化处理
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && animationId) {
+                cancelAnimationFrame(animationId);
+            } else if (!document.hidden) {
+                startVisualization();
+            }
+        });
+    </script>
+</body>
+</html>

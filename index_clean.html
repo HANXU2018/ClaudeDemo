@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小噪音 - 净化版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            font-weight: 300;
+            color: #34495e;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .sound-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .sound-item {
+            text-align: center;
+            padding: 20px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            background: #f8f9fa;
+        }
+
+        .sound-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .sound-item.active {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .sound-emoji {
+            font-size: 2em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .sound-title {
+            font-size: 0.85em;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976d2;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .volume-control {
+            margin-top: 20px;
+        }
+
+        .volume-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e9ecef;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2196f3;
+            cursor: pointer;
+        }
+
+        .playing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status {
+            text-align: center;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .status.playing {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status.paused {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>小噪音</h1>
+            <p>专注·放松·静心</p>
+        </div>
+
+        <div class="card">
+            <div class="section-title">选择声音</div>
+            <div class="sound-grid" id="soundGrid">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="controls">
+                <button class="btn btn-primary" id="playBtn">开始播放</button>
+                <button class="btn btn-secondary" id="pauseBtn">暂停</button>
+            </div>
+            
+            <div class="volume-control">
+                <div class="volume-label">音量</div>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
+            </div>
+        </div>
+
+        <div class="status paused" id="statusDisplay">
+            点击开始播放，享受宁静时光
+        </div>
+    </div>
+
+    <script>
+        const sounds = [
+            { id: 'news', title: '新闻', emoji: '📺', url: './audio/news.mp3' },
+            { id: 'rain', title: '雨声', emoji: '🌧️', url: './audio/rain.mp3' },
+            { id: 'ocean', title: '海浪', emoji: '🌊', url: './audio/ocean_waves.mp3' },
+            { id: 'birds', title: '鸟鸣', emoji: '🐦', url: './audio/birds_chirping.mp3' },
+            { id: 'fire', title: '火焰', emoji: '🔥', url: './audio/fireplace.mp3' },
+            { id: 'white_noise', title: '白噪音', emoji: '📻', url: './audio/white_noise.mp3' },
+            { id: 'pink_noise', title: '粉噪音', emoji: '🌸', url: './audio/pink_noise.mp3' },
+            { id: 'brown_noise', title: '棕噪音', emoji: '🤎', url: './audio/brown_noise.mp3' }
+        ];
+
+        let currentAudio = null;
+        let selectedSound = sounds[5]; // 默认选择白噪音
+        let volume = 50;
+
+        function initApp() {
+            renderSounds();
+            initControls();
+            selectSound(selectedSound.id);
+        }
+
+        function renderSounds() {
+            const container = document.getElementById('soundGrid');
+            container.innerHTML = sounds.map(sound => `
+                <div class="sound-item" data-sound-id="${sound.id}" onclick="selectSound('${sound.id}')">
+                    <span class="sound-emoji">${sound.emoji}</span>
+                    <div class="sound-title">${sound.title}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectSound(soundId) {
+            selectedSound = sounds.find(s => s.id === soundId);
+            
+            // 更新视觉选择
+            document.querySelectorAll('.sound-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.soundId === soundId);
+            });
+
+            // 停止当前播放
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+
+            // 创建新音频
+            currentAudio = new Audio(selectedSound.url);
+            currentAudio.loop = true;
+            currentAudio.volume = volume / 100;
+
+            updateStatus();
+        }
+
+        function initControls() {
+            document.getElementById('playBtn').onclick = play;
+            document.getElementById('pauseBtn').onclick = pause;
+            document.getElementById('volumeSlider').oninput = function() {
+                volume = this.value;
+                if (currentAudio) {
+                    currentAudio.volume = volume / 100;
+                }
+            };
+        }
+
+        async function play() {
+            if (!currentAudio) return;
+            
+            try {
+                await currentAudio.play();
+                updateStatus(true);
+            } catch (error) {
+                console.error('播放失败:', error);
+                updateStatus(false, '播放失败，请检查音频文件');
+            }
+        }
+
+        function pause() {
+            if (currentAudio) {
+                currentAudio.pause();
+                updateStatus(false);
+            }
+        }
+
+        function updateStatus(isPlaying = false, message = null) {
+            const statusEl = document.getElementById('statusDisplay');
+            
+            if (message) {
+                statusEl.textContent = message;
+                statusEl.className = 'status paused';
+                return;
+            }
+
+            if (isPlaying) {
+                statusEl.innerHTML = `正在播放: ${selectedSound.title} <span class="playing-indicator"></span>`;
+                statusEl.className = 'status playing';
+            } else {
+                statusEl.textContent = `已选择: ${selectedSound.title} - 点击开始播放`;
+                statusEl.className = 'status paused';
+            }
+        }
+
+        // 监听音频状态变化
+        setInterval(() => {
+            if (currentAudio) {
+                updateStatus(!currentAudio.paused);
+            }
+        }, 1000);
+
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

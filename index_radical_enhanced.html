@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小噪音 - 激进版增强</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        .immersive-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #111111 0%, #000000 100%);
+            transition: all 0.5s ease;
+        }
+
+        .sound-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .wave {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: wave-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes wave-pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.1;
+            }
+        }
+
+        .current-sound {
+            font-size: 3em;
+            font-weight: 100;
+            text-align: center;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            letter-spacing: 0.1em;
+            animation: breathing 4s ease-in-out infinite;
+            z-index: 10;
+            position: relative;
+        }
+
+        @keyframes breathing {
+            0%, 100% {
+                opacity: 0.7;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+        }
+
+        .sound-emoji {
+            font-size: 4em;
+            margin-bottom: 30px;
+            animation: float 6s ease-in-out infinite;
+            z-index: 10;
+            position: relative;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* 时钟样式 */
+        .clock-display {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5em;
+            font-weight: 100;
+            letter-spacing: 0.05em;
+            opacity: 0.6;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .date-display {
+            font-size: 0.4em;
+            margin-top: 10px;
+            opacity: 0.8;
+            letter-spacing: 0.1em;
+        }
+
+        /* 计时器样式 */
+        .timer-display {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.8em;
+            font-weight: 100;
+            opacity: 0.8;
+            z-index: 10;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 25px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .timer-label {
+            font-size: 0.5em;
+            opacity: 0.6;
+            margin-bottom: 5px;
+            letter-spacing: 0.1em;
+        }
+
+        /* 列表选择页面 */
+        .sound-list-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 40px 40px;
+        }
+
+        .sound-list-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sound-list-title {
+            font-size: 2em;
+            font-weight: 100;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 0.1em;
+        }
+
+        .sound-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px;
+        }
+
+        .sound-list-item {
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sound-list-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            padding-left: 10px;
+        }
+
+        .sound-list-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .sound-list-emoji {
+            font-size: 2em;
+            margin-right: 20px;
+            width: 60px;
+            text-align: center;
+        }
+
+        .sound-list-info {
+            flex: 1;
+        }
+
+        .sound-list-name {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+            font-weight: 400;
+        }
+
+        .sound-list-duration {
+            font-size: 0.8em;
+            opacity: 0.6;
+        }
+
+        .close-list-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: none;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .close-list-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .gesture-hint {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            opacity: 0.4;
+            text-align: center;
+            line-height: 1.8;
+            animation: fade-in-out 8s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        @keyframes fade-in-out {
+            0%, 20%, 80%, 100% {
+                opacity: 0.4;
+            }
+            40%, 60% {
+                opacity: 0.2;
+            }
+        }
+
+        .volume-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .volume-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .volume-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: 100;
+        }
+
+        .volume-progress {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            transform: rotate(-90deg);
+            transition: all 0.2s ease;
+        }
+
+        .playing-state {
+            animation: playing-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes playing-pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        .paused-state {
+            opacity: 0.6;
+        }
+
+        .transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: 100;
+        }
+
+        .transition-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 状态指示器 */
+        .status-indicators {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.playing {
+            background: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        .status-dot.timer-active {
+            background: #FF9800;
+            box-shadow: 0 0 10px #FF9800;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <div class="immersive-container" id="mainContainer">
+        <div class="sound-visualizer" id="visualizer">
+            <!-- 动态生成波纹 -->
+        </div>
+
+        <div class="clock-display" id="clockDisplay">
+            <div id="timeDisplay">--:--</div>
+            <div class="date-display" id="dateDisplay">---- -- --</div>
+        </div>
+
+        <div class="status-indicators">
+            <div class="status-dot" id="playingIndicator"></div>
+            <div class="status-dot" id="timerIndicator"></div>
+        </div>
+
+        <div class="sound-emoji" id="soundEmoji">📺</div>
+        <div class="current-sound" id="currentSound">新闻播报</div>
+
+        <div class="timer-display" id="timerDisplay">
+            <div class="timer-label">播放时长</div>
+            <div id="timerValue">00:00:00</div>
+        </div>
+
+        <div class="gesture-hint">
+            轻点暂停/播放 · 长按调节音量<br>
+            左右滑动切换声音 · 双击显示列表
+        </div>
+    </div>
+
+    <!-- 音量控制覆盖层 -->
+    <div class="volume-overlay" id="volumeOverlay">
+        <div class="volume-circle">
+            <div class="volume-progress" id="volumeProgress"></div>
+            <span id="volumeText">50</span>
+        </div>
+    </div>
+
+    <!-- 过渡动画覆盖层 -->
+    <div class="transition-overlay" id="transitionOverlay">
+        <span id="transitionText"></span>
+    </div>
+
+    <!-- 声音列表选择覆盖层 -->
+    <div class="sound-list-overlay" id="soundListOverlay">
+        <button class="close-list-btn" onclick="hideSoundList()">×</button>
+        <div class="sound-list-title">选择声音</div>
+        <div class="sound-list" id="soundList">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        const sounds = [
+            { id: 'news', title: '新闻播报', emoji: '📺', url: './audio/news.mp3', duration: '7:17' },
+            { id: 'xiaozhang', title: '领导讲话', emoji: '🎤', url: './audio/xiaozhang.mp3', duration: '9:02' },
+            { id: 'white_noise', title: '白噪音', emoji: '📻', url: './audio/white_noise.mp3', duration: '1:00' },
+            { id: 'pink_noise', title: '粉噪音', emoji: '🌸', url: './audio/pink_noise.mp3', duration: '1:00' },
+            { id: 'brown_noise', title: '棕噪音', emoji: '🤎', url: './audio/brown_noise.mp3', duration: '1:00' },
+            { id: 'rain', title: '雨声', emoji: '🌧️', url: './audio/rain.mp3', duration: '1:00' },
+            { id: 'ocean', title: '海浪', emoji: '🌊', url: './audio/ocean_waves.mp3', duration: '1:00' },
+            { id: 'birds', title: '鸟鸣', emoji: '🐦', url: './audio/birds_chirping.mp3', duration: '1:00' },
+            { id: 'fire', title: '火焰', emoji: '🔥', url: './audio/fireplace.mp3', duration: '1:00' }
+        ];
+
+        let currentIndex = 0; // 默认新闻
+        let currentAudio = null;
+        let volume = 50;
+        let isPlaying = false;
+        let longPressTimer = null;
+        let touchStartPos = null;
+        let playStartTime = null;
+        let totalPlayTime = 0;
+        let timerInterval = null;
+        let clockInterval = null;
+
+        // 初始化
+        function init() {
+            createVisualizer();
+            loadSound(currentIndex);
+            initGestures();
+            initClock();
+            initSoundList();
+            
+            // 3秒后自动播放
+            setTimeout(() => {
+                playCurrentSound();
+            }, 3000);
+        }
+
+        // 初始化时钟
+        function initClock() {
+            updateClock();
+            clockInterval = setInterval(updateClock, 1000);
+        }
+
+        // 更新时钟显示
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const dateStr = now.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            
+            document.getElementById('timeDisplay').textContent = timeStr;
+            document.getElementById('dateDisplay').textContent = dateStr.replace(/\//g, ' / ');
+        }
+
+        // 初始化计时器
+        function initTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                if (isPlaying && currentAudio) {
+                    totalPlayTime++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        // 更新计时器显示
+        function updateTimerDisplay() {
+            const hours = Math.floor(totalPlayTime / 3600);
+            const minutes = Math.floor((totalPlayTime % 3600) / 60);
+            const seconds = totalPlayTime % 60;
+            
+            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timerValue').textContent = timeStr;
+        }
+
+        // 初始化声音列表
+        function initSoundList() {
+            const container = document.getElementById('soundList');
+            container.innerHTML = sounds.map((sound, index) => `
+                <div class="sound-list-item ${index === currentIndex ? 'active' : ''}" 
+                     onclick="selectSoundFromList(${index})" 
+                     data-index="${index}">
+                    <div class="sound-list-emoji">${sound.emoji}</div>
+                    <div class="sound-list-info">
+                        <div class="sound-list-name">${sound.title}</div>
+                        <div class="sound-list-duration">${sound.duration}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 从列表选择声音
+        function selectSoundFromList(index) {
+            if (index === currentIndex) {
+                hideSoundList();
+                return;
+            }
+            
+            currentIndex = index;
+            loadSound(index);
+            updateSoundList();
+            
+            if (isPlaying) {
+                setTimeout(() => playCurrentSound(), 100);
+            }
+            
+            setTimeout(() => {
+                hideSoundList();
+            }, 500);
+        }
+
+        // 更新声音列表
+        function updateSoundList() {
+            document.querySelectorAll('.sound-list-item').forEach((item, index) => {
+                item.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        // 显示声音列表
+        function showSoundList() {
+            document.getElementById('soundListOverlay').classList.add('visible');
+            document.body.style.cursor = 'default';
+        }
+
+        // 隐藏声音列表
+        function hideSoundList() {
+            document.getElementById('soundListOverlay').classList.remove('visible');
+            document.body.style.cursor = 'none';
+        }
+
+        // 创建声音可视化
+        function createVisualizer() {
+            const visualizer = document.getElementById('visualizer');
+            
+            for (let i = 0; i < 5; i++) {
+                const wave = document.createElement('div');
+                wave.className = 'wave';
+                const size = 100 + i * 80;
+                wave.style.width = size + 'px';
+                wave.style.height = size + 'px';
+                wave.style.top = '50%';
+                wave.style.left = '50%';
+                wave.style.marginTop = '-' + (size / 2) + 'px';
+                wave.style.marginLeft = '-' + (size / 2) + 'px';
+                wave.style.animationDelay = i * 0.5 + 's';
+                visualizer.appendChild(wave);
+            }
+        }
+
+        // 加载声音
+        function loadSound(index) {
+            const sound = sounds[index];
+            
+            // 更新UI
+            document.getElementById('soundEmoji').textContent = sound.emoji;
+            document.getElementById('currentSound').textContent = sound.title;
+            
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // 创建新音频
+            currentAudio = new Audio(sound.url);
+            currentAudio.loop = true;
+            currentAudio.volume = volume / 100;
+            
+            currentAudio.onplay = () => {
+                isPlaying = true;
+                playStartTime = Date.now();
+                updatePlayingState();
+                initTimer();
+            };
+            
+            currentAudio.onpause = () => {
+                isPlaying = false;
+                updatePlayingState();
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+            };
+        }
+
+        // 播放当前声音
+        async function playCurrentSound() {
+            if (!currentAudio) return;
+            
+            try {
+                await currentAudio.play();
+            } catch (error) {
+                console.warn('自动播放失败，需要用户交互', error);
+            }
+        }
+
+        // 切换播放状态
+        function togglePlay() {
+            if (!currentAudio) return;
+            
+            if (isPlaying) {
+                currentAudio.pause();
+            } else {
+                playCurrentSound();
+            }
+        }
+
+        // 切换声音
+        function switchSound(direction) {
+            showTransition(sounds[currentIndex].title);
+            
+            setTimeout(() => {
+                if (direction > 0) {
+                    currentIndex = (currentIndex + 1) % sounds.length;
+                } else {
+                    currentIndex = (currentIndex - 1 + sounds.length) % sounds.length;
+                }
+                
+                const wasPlaying = isPlaying;
+                loadSound(currentIndex);
+                updateSoundList();
+                
+                if (wasPlaying) {
+                    setTimeout(() => playCurrentSound(), 100);
+                }
+                
+                hideTransition();
+            }, 250);
+        }
+
+        // 设置音量
+        function setVolume(newVolume) {
+            volume = Math.max(0, Math.min(100, newVolume));
+            
+            if (currentAudio) {
+                currentAudio.volume = volume / 100;
+            }
+            
+            updateVolumeDisplay();
+        }
+
+        // 显示音量控制
+        function showVolumeControl() {
+            document.getElementById('volumeOverlay').classList.add('visible');
+            updateVolumeDisplay();
+        }
+
+        // 隐藏音量控制
+        function hideVolumeControl() {
+            document.getElementById('volumeOverlay').classList.remove('visible');
+        }
+
+        // 更新音量显示
+        function updateVolumeDisplay() {
+            const progressEl = document.getElementById('volumeProgress');
+            const textEl = document.getElementById('volumeText');
+            
+            const rotation = (volume / 100) * 360;
+            progressEl.style.transform = `rotate(${rotation - 90}deg)`;
+            textEl.textContent = Math.round(volume);
+        }
+
+        // 显示过渡动画
+        function showTransition(text) {
+            const overlay = document.getElementById('transitionOverlay');
+            const textEl = document.getElementById('transitionText');
+            
+            textEl.textContent = text;
+            overlay.classList.add('visible');
+        }
+
+        // 隐藏过渡动画
+        function hideTransition() {
+            document.getElementById('transitionOverlay').classList.remove('visible');
+        }
+
+        // 更新播放状态
+        function updatePlayingState() {
+            const container = document.getElementById('mainContainer');
+            const playingIndicator = document.getElementById('playingIndicator');
+            const timerIndicator = document.getElementById('timerIndicator');
+            
+            if (isPlaying) {
+                container.classList.add('playing-state');
+                container.classList.remove('paused-state');
+                playingIndicator.classList.add('playing');
+                timerIndicator.classList.add('timer-active');
+            } else {
+                container.classList.add('paused-state');
+                container.classList.remove('playing-state');
+                playingIndicator.classList.remove('playing');
+                timerIndicator.classList.remove('timer-active');
+            }
+        }
+
+        // 初始化手势
+        function initGestures() {
+            const container = document.getElementById('mainContainer');
+            let tapCount = 0;
+            let tapTimer = null;
+            
+            // 触摸开始
+            container.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                touchStartPos = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                    time: Date.now()
+                };
+                
+                // 长按检测
+                longPressTimer = setTimeout(() => {
+                    showVolumeControl();
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                }, 500);
+            });
+            
+            // 触摸移动
+            container.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!touchStartPos) return;
+                
+                const deltaX = e.touches[0].clientX - touchStartPos.x;
+                const deltaY = e.touches[0].clientY - touchStartPos.y;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                if (distance > 10) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                
+                // 音量控制中的垂直滑动
+                if (document.getElementById('volumeOverlay').classList.contains('visible')) {
+                    const volumeChange = -deltaY / 3;
+                    const newVolume = volume + volumeChange;
+                    setVolume(newVolume);
+                    touchStartPos.y = e.touches[0].clientY;
+                }
+            });
+            
+            // 触摸结束
+            container.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                
+                if (!touchStartPos) return;
+                
+                const deltaX = e.changedTouches[0].clientX - touchStartPos.x;
+                const deltaY = e.changedTouches[0].clientY - touchStartPos.y;
+                const duration = Date.now() - touchStartPos.time;
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                // 隐藏音量控制
+                if (document.getElementById('volumeOverlay').classList.contains('visible')) {
+                    hideVolumeControl();
+                    touchStartPos = null;
+                    return;
+                }
+                
+                // 双击检测
+                if (duration < 300 && distance < 20) {
+                    tapCount++;
+                    
+                    if (tapCount === 1) {
+                        tapTimer = setTimeout(() => {
+                            // 单击
+                            togglePlay();
+                            tapCount = 0;
+                        }, 300);
+                    } else if (tapCount === 2) {
+                        // 双击
+                        clearTimeout(tapTimer);
+                        showSoundList();
+                        tapCount = 0;
+                    }
+                }
+                // 水平滑动切换声音
+                else if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                    switchSound(deltaX > 0 ? 1 : -1);
+                }
+                // 垂直滑动调音量
+                else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 50) {
+                    const volumeChange = -deltaY / 5;
+                    setVolume(volume + volumeChange);
+                }
+                
+                touchStartPos = null;
+            });
+            
+            // 鼠标事件（桌面端）
+            let mouseClickCount = 0;
+            let mouseClickTimer = null;
+            
+            container.addEventListener('click', (e) => {
+                mouseClickCount++;
+                
+                if (mouseClickCount === 1) {
+                    mouseClickTimer = setTimeout(() => {
+                        togglePlay();
+                        mouseClickCount = 0;
+                    }, 300);
+                } else if (mouseClickCount === 2) {
+                    clearTimeout(mouseClickTimer);
+                    showSoundList();
+                    mouseClickCount = 0;
+                }
+            });
+            
+            // 键盘事件
+            document.addEventListener('keydown', (e) => {
+                switch (e.code) {
+                    case 'Space':
+                        e.preventDefault();
+                        togglePlay();
+                        break;
+                    case 'ArrowLeft':
+                        switchSound(-1);
+                        break;
+                    case 'ArrowRight':
+                        switchSound(1);
+                        break;
+                    case 'ArrowUp':
+                        setVolume(volume + 10);
+                        break;
+                    case 'ArrowDown':
+                        setVolume(volume - 10);
+                        break;
+                    case 'KeyL':
+                        showSoundList();
+                        break;
+                    case 'Escape':
+                        hideSoundList();
+                        break;
+                }
+            });
+        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 防止页面滚动
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // 页面可见性变化时暂停/恢复计时器
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (timerInterval) clearInterval(timerInterval);
+            } else {
+                if (isPlaying) initTimer();
+            }
+        });
+    </script>
+</body>
+</html>

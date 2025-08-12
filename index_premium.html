@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小噪音 - 至臻版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        .neural-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, #0a0a0a 0%, #000000 70%);
+        }
+
+        .ai-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hologram-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .sound-orb {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(0,255,255,0.1), transparent);
+            position: relative;
+            animation: orb-float 4s ease-in-out infinite;
+            box-shadow: 
+                0 0 60px rgba(0,255,255,0.3),
+                inset 0 0 60px rgba(255,255,255,0.1);
+            pointer-events: all;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sound-orb:hover {
+            transform: scale(1.1);
+            box-shadow: 
+                0 0 100px rgba(0,255,255,0.5),
+                inset 0 0 100px rgba(255,255,255,0.2);
+        }
+
+        .sound-orb::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,255,255,0.3);
+            animation: orbit-ring 6s linear infinite;
+        }
+
+        .sound-orb::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: orbit-ring 8s linear infinite reverse;
+        }
+
+        @keyframes orb-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(90deg); }
+            50% { transform: translateY(0) rotate(180deg); }
+            75% { transform: translateY(-5px) rotate(270deg); }
+        }
+
+        @keyframes orbit-ring {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .sound-info {
+            text-align: center;
+            margin-top: 40px;
+            animation: info-glow 3s ease-in-out infinite;
+        }
+
+        .sound-title {
+            font-size: 2.5em;
+            font-weight: 100;
+            letter-spacing: 0.2em;
+            text-shadow: 0 0 20px rgba(0,255,255,0.5);
+            margin-bottom: 10px;
+        }
+
+        .sound-subtitle {
+            font-size: 1em;
+            opacity: 0.7;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        @keyframes info-glow {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .ai-controls {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+            pointer-events: all;
+        }
+
+        .neural-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(0,255,255,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neural-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0,255,255,0.3), transparent);
+            transform: rotate(-45deg) translate(-100%, -100%);
+            transition: all 0.6s ease;
+        }
+
+        .neural-button:hover::before {
+            transform: rotate(-45deg) translate(100%, 100%);
+        }
+
+        .neural-button:hover {
+            background: rgba(0,255,255,0.2);
+            box-shadow: 0 0 30px rgba(0,255,255,0.5);
+            transform: scale(1.1);
+        }
+
+        .neural-button span {
+            position: relative;
+            z-index: 2;
+            font-size: 1.2em;
+        }
+
+        .biometric-panel {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 200px;
+            opacity: 0;
+            animation: panel-fade 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes panel-fade {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.8; }
+        }
+
+        .bio-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .metric-label {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .metric-value {
+            color: #00ffff;
+            font-weight: 500;
+        }
+
+        .metric-bar {
+            width: 60px;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-left: 10px;
+        }
+
+        .metric-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #00ff88);
+            border-radius: 2px;
+            animation: metric-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes metric-pulse {
+            0%, 100% { width: 70%; }
+            50% { width: 85%; }
+        }
+
+        .scene-selector {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            pointer-events: all;
+        }
+
+        .scene-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .scene-item.active {
+            border-color: #00ffff;
+            background: rgba(0,255,255,0.2);
+            box-shadow: 0 0 20px rgba(0,255,255,0.4);
+        }
+
+        .scene-item:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .scene-emoji {
+            font-size: 1.5em;
+            filter: drop-shadow(0 0 5px rgba(0,255,255,0.5));
+        }
+
+        .quantum-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: particle-float 10s linear infinite;
+            box-shadow: 0 0 6px #00ffff;
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .immersion-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(30px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .immersion-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .immersion-text {
+            font-size: 3em;
+            font-weight: 100;
+            text-align: center;
+            margin-bottom: 30px;
+            animation: text-wave 4s ease-in-out infinite;
+        }
+
+        @keyframes text-wave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .breathing-guide {
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: breathing-cycle 8s ease-in-out infinite;
+            position: relative;
+        }
+
+        .breathing-guide::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(0,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: breathing-fill 8s ease-in-out infinite;
+        }
+
+        @keyframes breathing-cycle {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+        }
+
+        @keyframes breathing-fill {
+            0%, 100% { width: 0; height: 0; }
+            25% { width: 80px; height: 80px; }
+            50% { width: 0; height: 0; }
+            75% { width: 60px; height: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="neural-container">
+        <canvas class="ai-canvas" id="aiCanvas"></canvas>
+        
+        <div class="quantum-visualizer" id="quantumViz">
+            <!-- 动态粒子 -->
+        </div>
+
+        <div class="hologram-ui">
+            <div class="sound-orb" id="soundOrb" onclick="toggleImmersion()">
+            </div>
+            
+            <div class="sound-info">
+                <div class="sound-title" id="soundTitle">神经白噪音</div>
+                <div class="sound-subtitle" id="soundSubtitle">AI Enhanced • Neural Tuned</div>
+            </div>
+        </div>
+
+        <div class="ai-controls">
+            <div class="neural-button" onclick="previousSound()">
+                <span>◀</span>
+            </div>
+            <div class="neural-button" onclick="togglePlay()">
+                <span id="playIcon">▶</span>
+            </div>
+            <div class="neural-button" onclick="nextSound()">
+                <span>▶</span>
+            </div>
+        </div>
+
+        <div class="scene-selector" id="sceneSelector">
+            <!-- 动态生成 -->
+        </div>
+
+        <div class="biometric-panel">
+            <div class="bio-metric">
+                <span class="metric-label">Focus Level</span>
+                <span class="metric-value">87%</span>
+                <div class="metric-bar">
+                    <div class="metric-fill"></div>
+                </div>
+            </div>
+            <div class="bio-metric">
+                <span class="metric-label">Relaxation</span>
+                <span class="metric-value">92%</span>
+                <div class="metric-bar">
+                    <div class="metric-fill"></div>
+                </div>
+            </div>
+            <div class="bio-metric">
+                <span class="metric-label">Neural Sync</span>
+                <span class="metric-value">78%</span>
+                <div class="metric-bar">
+                    <div class="metric-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="immersion-overlay" id="immersionMode">
+        <div class="immersion-text" id="immersionText">深呼吸</div>
+        <div class="breathing-guide"></div>
+    </div>
+
+    <script>
+        const sounds = [
+            { id: 'white_noise', title: '神经白噪音', subtitle: 'AI Enhanced • Neural Tuned', emoji: '🧠', url: './audio/white_noise.mp3' },
+            { id: 'pink_noise', title: '量子粉噪音', subtitle: 'Quantum Filtered • Binaural', emoji: '🔮', url: './audio/pink_noise.mp3' },
+            { id: 'brown_noise', title: '深层棕噪音', subtitle: 'Deep Focus • Alpha Waves', emoji: '🌊', url: './audio/brown_noise.mp3' },
+            { id: 'rain', title: '数字雨境', subtitle: 'Virtual Nature • 3D Spatial', emoji: '🌧️', url: './audio/rain.mp3' },
+            { id: 'ocean', title: '全息海洋', subtitle: 'Holographic Waves • Surround', emoji: '🌊', url: './audio/ocean_waves.mp3' },
+            { id: 'birds', title: '仿生鸟语', subtitle: 'Synthetic Nature • AI Generated', emoji: '🐦', url: './audio/birds_chirping.mp3' },
+            { id: 'fire', title: '等离子火焰', subtitle: 'Plasma Fire • Harmonic Tuned', emoji: '🔥', url: './audio/fireplace.mp3' },
+            { id: 'news', title: '信息流', subtitle: 'Neural News • Processed Audio', emoji: '📡', url: './audio/news.mp3' }
+        ];
+
+        let currentIndex = 0;
+        let currentAudio = null;
+        let isPlaying = false;
+        let canvas, ctx;
+        let particles = [];
+        let immersionActive = false;
+
+        // 初始化
+        function init() {
+            setupCanvas();
+            setupParticles();
+            renderScenes();
+            loadSound(currentIndex);
+            startVisualization();
+            
+            // 自动播放
+            setTimeout(() => {
+                togglePlay();
+            }, 3000);
+        }
+
+        // 设置Canvas
+        function setupCanvas() {
+            canvas = document.getElementById('aiCanvas');
+            ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        // 设置粒子系统
+        function setupParticles() {
+            const particleContainer = document.getElementById('quantumViz');
+            
+            setInterval(() => {
+                if (particles.length < 20) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    particleContainer.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.remove();
+                        }
+                    }, 10000);
+                }
+            }, 800);
+        }
+
+        // 渲染场景选择器
+        function renderScenes() {
+            const container = document.getElementById('sceneSelector');
+            container.innerHTML = sounds.map((sound, index) => `
+                <div class="scene-item ${index === currentIndex ? 'active' : ''}" 
+                     onclick="selectSound(${index})" 
+                     data-index="${index}">
+                    <span class="scene-emoji">${sound.emoji}</span>
+                </div>
+            `).join('');
+        }
+
+        // 选择声音
+        function selectSound(index) {
+            if (index === currentIndex) return;
+            
+            currentIndex = index;
+            loadSound(index);
+            updateSceneSelector();
+            
+            if (isPlaying) {
+                setTimeout(() => togglePlay(), 100);
+            }
+        }
+
+        // 加载声音
+        function loadSound(index) {
+            const sound = sounds[index];
+            
+            // 更新UI
+            document.getElementById('soundTitle').textContent = sound.title;
+            document.getElementById('soundSubtitle').textContent = sound.subtitle;
+            
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // 创建新音频
+            currentAudio = new Audio(sound.url);
+            currentAudio.loop = true;
+            currentAudio.volume = 0.7;
+            
+            currentAudio.onplay = () => {
+                isPlaying = true;
+                updatePlayButton();
+            };
+            
+            currentAudio.onpause = () => {
+                isPlaying = false;
+                updatePlayButton();
+            };
+        }
+
+        // 切换播放
+        async function togglePlay() {
+            if (!currentAudio) return;
+            
+            if (isPlaying) {
+                currentAudio.pause();
+            } else {
+                try {
+                    await currentAudio.play();
+                } catch (error) {
+                    console.warn('播放失败:', error);
+                }
+            }
+        }
+
+        // 上一个声音
+        function previousSound() {
+            const newIndex = (currentIndex - 1 + sounds.length) % sounds.length;
+            selectSound(newIndex);
+        }
+
+        // 下一个声音
+        function nextSound() {
+            const newIndex = (currentIndex + 1) % sounds.length;
+            selectSound(newIndex);
+        }
+
+        // 更新播放按钮
+        function updatePlayButton() {
+            document.getElementById('playIcon').textContent = isPlaying ? '⏸' : '▶';
+        }
+
+        // 更新场景选择器
+        function updateSceneSelector() {
+            document.querySelectorAll('.scene-item').forEach((item, index) => {
+                item.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        // 切换沉浸模式
+        function toggleImmersion() {
+            const overlay = document.getElementById('immersionMode');
+            immersionActive = !immersionActive;
+            
+            if (immersionActive) {
+                overlay.classList.add('active');
+                startBreathingGuide();
+            } else {
+                overlay.classList.remove('active');
+                stopBreathingGuide();
+            }
+        }
+
+        // 开始呼吸引导
+        function startBreathingGuide() {
+            const texts = ['深呼吸', '保持', '慢慢呼出', '放松'];
+            let textIndex = 0;
+            
+            const breathingInterval = setInterval(() => {
+                if (!immersionActive) {
+                    clearInterval(breathingInterval);
+                    return;
+                }
+                
+                document.getElementById('immersionText').textContent = texts[textIndex];
+                textIndex = (textIndex + 1) % texts.length;
+            }, 2000);
+        }
+
+        // 停止呼吸引导
+        function stopBreathingGuide() {
+            // 呼吸引导会通过immersionActive标志自动停止
+        }
+
+        // 开始可视化
+        function startVisualization() {
+            let time = 0;
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制音频可视化效果
+                if (isPlaying && currentAudio) {
+                    drawAudioWaves(time);
+                }
+                
+                // 绘制背景粒子网络
+                drawParticleNetwork(time);
+                
+                time += 0.01;
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        // 绘制音频波形
+        function drawAudioWaves(time) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 - i * 0.1})`;
+                ctx.lineWidth = 2 - i * 0.5;
+                
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.1) {
+                    const radius = 100 + i * 30 + Math.sin(time * 2 + angle * 3) * 20;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    if (angle === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.closePath();
+                ctx.stroke();
+            }
+        }
+
+        // 绘制粒子网络
+        function drawParticleNetwork(time) {
+            const networkParticles = [];
+            
+            // 创建网络节点
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const radius = 150 + Math.sin(time + i) * 30;
+                const x = canvas.width / 2 + Math.cos(angle) * radius;
+                const y = canvas.height / 2 + Math.sin(angle) * radius;
+                
+                networkParticles.push({ x, y });
+                
+                // 绘制节点
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.6)';
+                ctx.fill();
+            }
+            
+            // 绘制连接线
+            for (let i = 0; i < networkParticles.length; i++) {
+                for (let j = i + 1; j < networkParticles.length; j++) {
+                    const p1 = networkParticles[i];
+                    const p2 = networkParticles[j];
+                    const distance = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+                    
+                    if (distance < 200) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 - distance / 600})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // 模拟生物识别数据更新
+        function updateBiometrics() {
+            const metrics = document.querySelectorAll('.metric-value');
+            
+            setInterval(() => {
+                metrics.forEach(metric => {
+                    const currentValue = parseInt(metric.textContent);
+                    const change = Math.random() * 10 - 5; // -5到+5的随机变化
+                    const newValue = Math.max(60, Math.min(99, currentValue + change));
+                    metric.textContent = Math.round(newValue) + '%';
+                });
+            }, 3000);
+        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            updateBiometrics();
+        });
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'ArrowLeft':
+                    previousSound();
+                    break;
+                case 'ArrowRight':
+                    nextSound();
+                    break;
+                case 'Enter':
+                    toggleImmersion();
+                    break;
+            }
+        });
+
+        // 防止页面滚动和缩放
+        document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+        document.addEventListener('gesturechange', (e) => e.preventDefault());
+    </script>
+</body>
+</html>

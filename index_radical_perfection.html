@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小噪音 - 完美版</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-gradient: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: rgba(255, 255, 255, 0.95);
+            --text-secondary: rgba(255, 255, 255, 0.65);
+            --text-accent: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-gradient);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 动态背景系统 */
+        .cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(245, 87, 108, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0, 242, 254, 0.1) 0%, transparent 70%),
+                linear-gradient(135deg, #0a0a0a 0%, #151515 50%, #0f0f0f 100%);
+            animation: cosmic-drift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes cosmic-drift {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.1) rotate(2deg); }
+        }
+
+        /* 粒子系统背景 */
+        .particle-field {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: particle-drift 15s linear infinite;
+        }
+
+        @keyframes particle-drift {
+            0% {
+                transform: translateY(100vh) translateX(-50px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-100px) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        /* 主容器 */
+        .app-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* 顶部状态栏 */
+        .status-bar {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 50px;
+            z-index: 20;
+        }
+
+        .time-display {
+            font-size: 1.1em;
+            font-weight: 300;
+            color: var(--text-accent);
+            letter-spacing: 0.05em;
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.active {
+            background: #00f2fe;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        /* 中央控制器 */
+        .central-control {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 40px 0;
+        }
+
+        .control-orb {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            transform: translate(-50%, -50%);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            backdrop-filter: blur(20px);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .control-orb:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 12px 48px rgba(0, 0, 0, 0.4),
+                0 0 60px rgba(102, 126, 234, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .control-orb.playing {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 
+                0 12px 48px rgba(102, 126, 234, 0.3),
+                0 0 80px rgba(102, 126, 234, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: orb-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes orb-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.02); }
+        }
+
+        .sound-icon {
+            font-size: 4em;
+            margin-bottom: 8px;
+            transition: all 0.4s ease;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .control-orb.playing .sound-icon {
+            animation: icon-float 4s ease-in-out infinite;
+        }
+
+        @keyframes icon-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .sound-title {
+            font-size: 0.9em;
+            font-weight: 400;
+            color: var(--text-secondary);
+            text-align: center;
+            letter-spacing: 0.05em;
+        }
+
+        /* 轨道环 */
+        .orbit-rings {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .orbit-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .ring-1 {
+            width: 240px;
+            height: 240px;
+            animation: ring-rotate 20s linear infinite;
+        }
+
+        .ring-2 {
+            width: 280px;
+            height: 280px;
+            animation: ring-rotate 15s linear infinite reverse;
+        }
+
+        .ring-3 {
+            width: 320px;
+            height: 320px;
+            animation: ring-rotate 25s linear infinite;
+        }
+
+        @keyframes ring-rotate {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .control-orb.playing .orbit-ring {
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+
+        /* 音频可视化 */
+        .visualizer-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .visualizer-canvas {
+            width: 100%;
+            height: 100%;
+            opacity: 0.6;
+        }
+
+        /* 底部控制面板 */
+        .control-panel {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 60px;
+            backdrop-filter: blur(20px);
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer-display {
+            font-size: 1em;
+            font-weight: 300;
+            color: var(--text-accent);
+            letter-spacing: 0.05em;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .volume-icon {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+        }
+
+        .volume-slider {
+            width: 80px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.6);
+        }
+
+        /* 音频列表覆盖层 */
+        .audio-library {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(30px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 80px 40px;
+        }
+
+        .audio-library.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .library-title {
+            font-size: 2.5em;
+            font-weight: 200;
+            margin-bottom: 60px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            letter-spacing: 0.02em;
+        }
+
+        .audio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .audio-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .audio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .audio-card:hover::before {
+            left: 100%;
+        }
+
+        .audio-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .audio-card.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+            border-color: rgba(102, 126, 234, 0.4);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.3);
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .audio-card:hover .card-icon {
+            transform: scale(1.1);
+        }
+
+        .card-title {
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .card-duration {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .close-library {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 44px;
+            height: 44px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+            color: var(--text-secondary);
+        }
+
+        .close-library:hover {
+            background: rgba(245, 87, 108, 0.15);
+            border-color: rgba(245, 87, 108, 0.3);
+            color: #f5576c;
+            transform: rotate(90deg);
+        }
+
+        /* 手势指示器 */
+        .gesture-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+            line-height: 1.6;
+            letter-spacing: 0.02em;
+            animation: hint-fade 6s ease-in-out infinite;
+        }
+
+        @keyframes hint-fade {
+            0%, 20%, 80%, 100% { opacity: 0.4; }
+            40%, 60% { opacity: 0.6; }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .status-bar {
+                padding: 0 30px;
+            }
+            
+            .central-control {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .control-orb {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .sound-icon {
+                font-size: 3em;
+            }
+            
+            .orbit-ring.ring-1 { width: 200px; height: 200px; }
+            .orbit-ring.ring-2 { width: 240px; height: 240px; }
+            .orbit-ring.ring-3 { width: 280px; height: 280px; }
+            
+            .control-panel {
+                padding: 15px 30px;
+                gap: 20px;
+                bottom: 40px;
+            }
+            
+            .audio-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 15px;
+            }
+            
+            .library-title {
+                font-size: 2em;
+                margin-bottom: 40px;
+            }
+        }
+
+        /* 高级触觉反馈动画 */
+        .touch-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0);
+            animation: ripple-effect 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-effect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cosmic-bg"></div>
+    <div class="particle-field" id="particleField"></div>
+
+    <div class="app-container">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="time-display" id="timeDisplay">--:--</div>
+            <div class="session-info">
+                <div class="status-dot" id="playingStatus"></div>
+                <span id="sessionTime">00:00</span>
+            </div>
+        </div>
+
+        <!-- 中央控制器 -->
+        <div class="central-control">
+            <div class="orbit-rings">
+                <div class="orbit-ring ring-1"></div>
+                <div class="orbit-ring ring-2"></div>
+                <div class="orbit-ring ring-3"></div>
+            </div>
+            
+            <div class="control-orb" id="controlOrb">
+                <span class="sound-icon" id="soundIcon">📺</span>
+                <div class="sound-title" id="soundTitle">新闻播报</div>
+            </div>
+            
+            <div class="visualizer-container">
+                <canvas class="visualizer-canvas" id="visualizer"></canvas>
+            </div>
+        </div>
+
+        <!-- 底部控制面板 -->
+        <div class="control-panel">
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="volume-control">
+                <span class="volume-icon">🔊</span>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="50">
+            </div>
+        </div>
+
+        <!-- 手势提示 -->
+        <div class="gesture-hint">
+            轻点播放 · 长按音量 · 滑动切换 · 双击列表
+        </div>
+    </div>
+
+    <!-- 音频库 -->
+    <div class="audio-library" id="audioLibrary">
+        <div class="close-library" id="closeLibrary">×</div>
+        <div class="library-title">音频库</div>
+        <div class="audio-grid" id="audioGrid">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
+    <script>
+        // 音频数据
+        const sounds = [
+            { id: 'news', title: '新闻播报', icon: '📺', url: './audio/news.mp3', duration: '7:17' },
+            { id: 'xiaozhang', title: '领导讲话', icon: '🎤', url: './audio/xiaozhang.mp3', duration: '9:02' },
+            { id: 'white_noise', title: '白噪音', icon: '📻', url: './audio/white_noise.mp3', duration: '1:00' },
+            { id: 'pink_noise', title: '粉噪音', icon: '🌸', url: './audio/pink_noise.mp3', duration: '1:00' },
+            { id: 'brown_noise', title: '棕噪音', icon: '🤎', url: './audio/brown_noise.mp3', duration: '1:00' },
+            { id: 'rain', title: '雨声', icon: '🌧️', url: './audio/rain.mp3', duration: '1:00' },
+            { id: 'ocean', title: '海浪', icon: '🌊', url: './audio/ocean_waves.mp3', duration: '1:00' },
+            { id: 'birds', title: '鸟鸣', icon: '🐦', url: './audio/birds_chirping.mp3', duration: '1:00' },
+            { id: 'fire', title: '火焰', icon: '🔥', url: './audio/fireplace.mp3', duration: '1:00' }
+        ];
+
+        // 应用状态
+        let currentIndex = 0;
+        let currentAudio = null;
+        let audioContext = null;
+        let analyser = null;
+        let dataArray = null;
+        let volume = 50;
+        let isPlaying = false;
+        let playStartTime = null;
+        let totalPlayTime = 0;
+        let sessionStartTime = Date.now();
+        
+        // 手势控制
+        let touchStartPos = null;
+        let longPressTimer = null;
+        let tapTimer = null;
+        let tapCount = 0;
+
+        // Canvas可视化
+        let canvas, ctx;
+        let animationId;
+
+        // 初始化应用
+        function init() {
+            setupCanvas();
+            setupAudioContext();
+            setupParticles();
+            loadSound(currentIndex);
+            initGestures();
+            initTimers();
+            renderAudioGrid();
+            startVisualization();
+
+            // 延迟自动播放
+            setTimeout(() => {
+                playCurrentSound();
+            }, 2000);
+        }
+
+        // 设置Canvas
+        function setupCanvas() {
+            canvas = document.getElementById('visualizer');
+            ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * window.devicePixelRatio;
+                canvas.height = rect.height * window.devicePixelRatio;
+                ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        // 设置音频上下文
+        function setupAudioContext() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 128;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+            } catch (e) {
+                console.warn('Web Audio API not supported');
+            }
+        }
+
+        // 设置粒子系统
+        function setupParticles() {
+            const particleField = document.getElementById('particleField');
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                particleField.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.remove();
+                    }
+                }, 15000);
+            }
+            
+            // 创建初始粒子
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => createParticle(), Math.random() * 5000);
+            }
+            
+            // 持续创建粒子
+            setInterval(createParticle, 800);
+        }
+
+        // 加载音频
+        function loadSound(index) {
+            const sound = sounds[index];
+            
+            // 更新UI
+            document.getElementById('soundIcon').textContent = sound.icon;
+            document.getElementById('soundTitle').textContent = sound.title;
+            
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // 创建新音频
+            currentAudio = new Audio(sound.url);
+            currentAudio.loop = true;
+            currentAudio.volume = volume / 100;
+            currentAudio.crossOrigin = 'anonymous';
+            
+            // 连接音频分析器
+            if (audioContext && analyser) {
+                try {
+                    const source = audioContext.createMediaElementSource(currentAudio);
+                    source.connect(analyser);
+                    analyser.connect(audioContext.destination);
+                } catch (e) {
+                    console.warn('Audio context connection failed:', e);
+                }
+            }
+            
+            // 音频事件监听
+            currentAudio.onplay = () => {
+                isPlaying = true;
+                playStartTime = Date.now();
+                updatePlayingState();
+                
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            };
+            
+            currentAudio.onpause = () => {
+                isPlaying = false;
+                updatePlayingState();
+            };
+            
+            updateAudioGrid();
+        }
+
+        // 播放音频
+        async function playCurrentSound() {
+            if (!currentAudio) return;
+            
+            try {
+                await currentAudio.play();
+            } catch (error) {
+                console.warn('播放失败:', error);
+            }
+        }
+
+        // 切换播放状态
+        function togglePlay() {
+            if (!currentAudio) return;
+            
+            if (isPlaying) {
+                currentAudio.pause();
+            } else {
+                playCurrentSound();
+            }
+        }
+
+        // 切换音频
+        function switchSound(direction) {
+            if (direction > 0) {
+                currentIndex = (currentIndex + 1) % sounds.length;
+            } else {
+                currentIndex = (currentIndex - 1 + sounds.length) % sounds.length;
+            }
+            
+            const wasPlaying = isPlaying;
+            loadSound(currentIndex);
+            
+            if (wasPlaying) {
+                setTimeout(() => playCurrentSound(), 100);
+            }
+        }
+
+        // 设置音量
+        function setVolume(newVolume) {
+            volume = Math.max(0, Math.min(100, newVolume));
+            
+            if (currentAudio) {
+                currentAudio.volume = volume / 100;
+            }
+            
+            document.getElementById('volumeSlider').value = volume;
+        }
+
+        // 更新播放状态
+        function updatePlayingState() {
+            const controlOrb = document.getElementById('controlOrb');
+            const playingStatus = document.getElementById('playingStatus');
+            
+            if (isPlaying) {
+                controlOrb.classList.add('playing');
+                playingStatus.classList.add('active');
+            } else {
+                controlOrb.classList.remove('playing');
+                playingStatus.classList.remove('active');
+            }
+        }
+
+        // 渲染音频网格
+        function renderAudioGrid() {
+            const grid = document.getElementById('audioGrid');
+            grid.innerHTML = sounds.map((sound, index) => `
+                <div class="audio-card ${index === currentIndex ? 'active' : ''}" 
+                     onclick="selectFromGrid(${index})">
+                    <span class="card-icon">${sound.icon}</span>
+                    <div class="card-title">${sound.title}</div>
+                    <div class="card-duration">${sound.duration}</div>
+                </div>
+            `).join('');
+        }
+
+        // 更新音频网格
+        function updateAudioGrid() {
+            document.querySelectorAll('.audio-card').forEach((card, index) => {
+                card.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        // 从网格选择音频
+        function selectFromGrid(index) {
+            currentIndex = index;
+            loadSound(index);
+            
+            if (isPlaying) {
+                setTimeout(() => playCurrentSound(), 100);
+            }
+            
+            setTimeout(() => {
+                toggleAudioLibrary();
+            }, 300);
+        }
+
+        // 切换音频库显示
+        function toggleAudioLibrary() {
+            document.getElementById('audioLibrary').classList.toggle('visible');
+        }
+
+        // 初始化计时器
+        function initTimers() {
+            setInterval(() => {
+                updateTimers();
+            }, 1000);
+        }
+
+        // 更新计时器显示
+        function updateTimers() {
+            // 当前时间
+            const now = new Date();
+            document.getElementById('timeDisplay').textContent = 
+                now.toLocaleTimeString('zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+            // 播放时间
+            if (isPlaying) {
+                totalPlayTime++;
+            }
+            const hours = Math.floor(totalPlayTime / 3600);
+            const minutes = Math.floor((totalPlayTime % 3600) / 60);
+            const seconds = totalPlayTime % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            // 会话时间
+            const sessionTime = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const sessionMinutes = Math.floor(sessionTime / 60);
+            const sessionSeconds = sessionTime % 60;
+            document.getElementById('sessionTime').textContent = 
+                `${sessionMinutes.toString().padStart(2, '0')}:${sessionSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // 创建触摸涟漪效果
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'touch-ripple';
+            ripple.style.left = (x - 25) + 'px';
+            ripple.style.top = (y - 25) + 'px';
+            ripple.style.width = '50px';
+            ripple.style.height = '50px';
+            
+            document.body.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        // 手势控制
+        function initGestures() {
+            const appContainer = document.querySelector('.app-container');
+            
+            // 触摸事件
+            appContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+            appContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+            appContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+            
+            // 鼠标事件
+            appContainer.addEventListener('mousedown', handleMouseStart);
+            appContainer.addEventListener('mousemove', handleMouseMove);
+            appContainer.addEventListener('mouseup', handleMouseEnd);
+            
+            // 音量滑块
+            document.getElementById('volumeSlider').addEventListener('input', (e) => {
+                setVolume(e.target.value);
+            });
+            
+            // 关闭库按钮
+            document.getElementById('closeLibrary').addEventListener('click', toggleAudioLibrary);
+            
+            // 键盘控制
+            document.addEventListener('keydown', handleKeyboard);
+        }
+
+        function handleTouchStart(e) {
+            if (e.target.closest('.control-panel') || e.target.closest('.audio-library')) return;
+            
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStartPos = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+            
+            createRipple(touch.clientX, touch.clientY);
+            
+            // 长按检测
+            longPressTimer = setTimeout(() => {
+                // 显示音量控制或其他长按功能
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 600);
+        }
+
+        function handleTouchMove(e) {
+            if (!touchStartPos) return;
+            
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStartPos.x;
+            const deltaY = touch.clientY - touchStartPos.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (distance > 20) {
+                clearTimeout(longPressTimer);
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchStartPos) return;
+            
+            clearTimeout(longPressTimer);
+            
+            const touch = e.changedTouches[0];
+            const deltaX = touch.clientX - touchStartPos.x;
+            const deltaY = touch.clientY - touchStartPos.y;
+            const duration = Date.now() - touchStartPos.time;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (duration < 300 && distance < 30) {
+                // 点击检测
+                tapCount++;
+                
+                if (tapCount === 1) {
+                    tapTimer = setTimeout(() => {
+                        // 单击
+                        togglePlay();
+                        tapCount = 0;
+                    }, 300);
+                } else if (tapCount === 2) {
+                    // 双击
+                    clearTimeout(tapTimer);
+                    toggleAudioLibrary();
+                    tapCount = 0;
+                }
+            } else if (distance > 50) {
+                // 滑动手势
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // 水平滑动
+                    switchSound(deltaX > 0 ? 1 : -1);
+                } else if (deltaY < -50) {
+                    // 向上滑动
+                    toggleAudioLibrary();
+                }
+            }
+            
+            touchStartPos = null;
+        }
+
+        function handleMouseStart(e) {
+            if (e.target.closest('.control-panel') || e.target.closest('.audio-library')) return;
+            
+            touchStartPos = { x: e.clientX, y: e.clientY, time: Date.now() };
+            createRipple(e.clientX, e.clientY);
+        }
+
+        function handleMouseMove(e) {
+            // 可以添加鼠标移动的视觉反馈
+        }
+
+        function handleMouseEnd(e) {
+            if (!touchStartPos) return;
+            
+            const duration = Date.now() - touchStartPos.time;
+            const distance = Math.sqrt(
+                Math.pow(e.clientX - touchStartPos.x, 2) + 
+                Math.pow(e.clientY - touchStartPos.y, 2)
+            );
+            
+            if (duration < 300 && distance < 30) {
+                tapCount++;
+                
+                if (tapCount === 1) {
+                    tapTimer = setTimeout(() => {
+                        togglePlay();
+                        tapCount = 0;
+                    }, 300);
+                } else if (tapCount === 2) {
+                    clearTimeout(tapTimer);
+                    toggleAudioLibrary();
+                    tapCount = 0;
+                }
+            }
+            
+            touchStartPos = null;
+        }
+
+        function handleKeyboard(e) {
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'ArrowLeft':
+                    switchSound(-1);
+                    break;
+                case 'ArrowRight':
+                    switchSound(1);
+                    break;
+                case 'KeyL':
+                    toggleAudioLibrary();
+                    break;
+                case 'Escape':
+                    document.getElementById('audioLibrary').classList.remove('visible');
+                    break;
+            }
+        }
+
+        // 音频可视化
+        function startVisualization() {
+            function animate() {
+                if (!canvas || !ctx) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                ctx.clearRect(0, 0, rect.width, rect.height);
+                
+                if (isPlaying && analyser && dataArray) {
+                    analyser.getByteFrequencyData(dataArray);
+                    drawFrequencyBars(rect.width, rect.height);
+                } else {
+                    drawIdleAnimation(rect.width, rect.height);
+                }
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        function drawFrequencyBars(width, height) {
+            const barWidth = width / dataArray.length;
+            const centerY = height / 2;
+            
+            for (let i = 0; i < dataArray.length; i++) {
+                const barHeight = (dataArray[i] / 255) * (height * 0.6);
+                const x = i * barWidth;
+                
+                // 渐变色
+                const gradient = ctx.createLinearGradient(0, centerY - barHeight / 2, 0, centerY + barHeight / 2);
+                gradient.addColorStop(0, `rgba(102, 126, 234, 0.8)`);
+                gradient.addColorStop(0.5, `rgba(79, 172, 254, 0.6)`);
+                gradient.addColorStop(1, `rgba(118, 75, 162, 0.8)`);
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, centerY - barHeight / 2, barWidth - 1, barHeight);
+            }
+        }
+
+        function drawIdleAnimation(width, height) {
+            const time = Date.now() * 0.002;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // 绘制静态波形
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let i = 0; i < width; i += 4) {
+                const y = centerY + Math.sin(i * 0.02 + time) * 20;
+                if (i === 0) {
+                    ctx.moveTo(i, y);
+                } else {
+                    ctx.lineTo(i, y);
+                }
+            }
+            
+            ctx.stroke();
+        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 页面可见性处理
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            } else {
+                startVisualization();
+            }
+        });
+    </script>
+</body>
+</html>

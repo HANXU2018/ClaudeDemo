@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小噪音 - Neural Wellness Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        :root {
+            /* 神经科学配色系统 */
+            --neural-primary: #0A0B1E;
+            --neural-secondary: #1A1B2E;
+            --synaptic-blue: #00D9FF;
+            --serotonin-green: #00FF88;
+            --dopamine-purple: #8B5FFF;
+            --cortisol-red: #FF4757;
+            --oxytocin-pink: #FF6B9D;
+            --melatonin-violet: #9B59B6;
+            --gaba-yellow: #FFA726;
+            
+            /* 高级材质 */
+            --quantum-glass: rgba(255, 255, 255, 0.02);
+            --neural-mesh: rgba(0, 217, 255, 0.05);
+            --holographic-border: rgba(139, 95, 255, 0.15);
+            --biometric-glow: rgba(0, 255, 136, 0.3);
+            
+            /* 文字层级 */
+            --text-neural: rgba(255, 255, 255, 0.98);
+            --text-synaptic: rgba(255, 255, 255, 0.78);
+            --text-quantum: rgba(255, 255, 255, 0.58);
+            --text-ghost: rgba(255, 255, 255, 0.38);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--neural-primary);
+            color: var(--text-neural);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            cursor: none;
+        }
+
+        /* 量子流体背景系统 */
+        .quantum-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 15% 25%, rgba(0, 217, 255, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 15%, rgba(139, 95, 255, 0.08) 0%, transparent 35%),
+                radial-gradient(circle at 45% 85%, rgba(0, 255, 136, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 75% 65%, rgba(255, 107, 157, 0.04) 0%, transparent 30%),
+                linear-gradient(135deg, var(--neural-primary), var(--neural-secondary));
+            animation: quantum-flow 25s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes quantum-flow {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg);
+                filter: hue-rotate(0deg) blur(0px);
+            }
+            25% { 
+                transform: scale(1.02) rotate(0.5deg);
+                filter: hue-rotate(15deg) blur(0.2px);
+            }
+            50% { 
+                transform: scale(1) rotate(0deg);
+                filter: hue-rotate(0deg) blur(0px);
+            }
+            75% { 
+                transform: scale(1.01) rotate(-0.3deg);
+                filter: hue-rotate(-10deg) blur(0.1px);
+            }
+        }
+
+        /* 神经网格系统 */
+        .neural-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 217, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 217, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: neural-pulse 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes neural-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.1; }
+        }
+
+        /* 主应用框架 */
+        .consciousness-interface {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            padding: 40px;
+        }
+
+        /* 顶部神经仪表盘 */
+        .neural-dashboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            height: 120px;
+        }
+
+        .temporal-display {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quantum-time {
+            font-size: 3.2em;
+            font-weight: 100;
+            color: var(--text-neural);
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--synaptic-blue), var(--serotonin-green));
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: quantum-flow-text 12s ease-in-out infinite;
+        }
+
+        @keyframes quantum-flow-text {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 50% 0%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 50% 100%; }
+        }
+
+        .chronos-subtitle {
+            font-size: 0.9em;
+            font-weight: 300;
+            color: var(--text-quantum);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .biometric-cluster {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .biometric-pod {
+            background: var(--quantum-glass);
+            border: 1px solid var(--holographic-border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            backdrop-filter: blur(30px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .biometric-pod::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.1), transparent);
+            animation: scanner-sweep 3s ease-in-out infinite;
+        }
+
+        @keyframes scanner-sweep {
+            0%, 100% { left: -100%; }
+            50% { left: 100%; }
+        }
+
+        .biometric-value {
+            font-size: 1.4em;
+            font-weight: 500;
+            background: linear-gradient(135deg, var(--serotonin-green), var(--synaptic-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        .biometric-label {
+            font-size: 0.65em;
+            color: var(--text-ghost);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        .neural-activity {
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neural-wave {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--biometric-glow), transparent);
+            animation: neural-flow 2s ease-in-out infinite;
+        }
+
+        @keyframes neural-flow {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* 中央意识核心 */
+        .consciousness-core {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .neural-nexus {
+            position: relative;
+            width: 360px;
+            height: 360px;
+            margin-bottom: 60px;
+        }
+
+        .hologram-field {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(0, 217, 255, 0.1), transparent 60%),
+                radial-gradient(circle at 70% 70%, rgba(0, 255, 136, 0.08), transparent 50%);
+            border: 1px solid var(--holographic-border);
+            backdrop-filter: blur(40px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: hologram-float 8s ease-in-out infinite;
+        }
+
+        @keyframes hologram-float {
+            0%, 100% { 
+                transform: translateY(0) scale(1);
+                box-shadow: 0 20px 80px rgba(0, 217, 255, 0.15);
+            }
+            50% { 
+                transform: translateY(-8px) scale(1.01);
+                box-shadow: 0 30px 120px rgba(0, 217, 255, 0.25);
+            }
+        }
+
+        .hologram-field.activated {
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(0, 217, 255, 0.2), transparent 60%),
+                radial-gradient(circle at 70% 70%, rgba(0, 255, 136, 0.15), transparent 50%);
+            border-color: var(--biometric-glow);
+            animation: hologram-active 6s ease-in-out infinite;
+        }
+
+        @keyframes hologram-active {
+            0%, 100% { 
+                transform: scale(1);
+                filter: blur(0px);
+            }
+            50% { 
+                transform: scale(1.03);
+                filter: blur(0.5px);
+            }
+        }
+
+        .quantum-resonator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            background: var(--quantum-glass);
+            border: 1px solid var(--neural-mesh);
+            border-radius: 50%;
+            backdrop-filter: blur(25px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            overflow: hidden;
+        }
+
+        .quantum-resonator::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                transparent 0deg,
+                rgba(0, 217, 255, 0.1) 45deg,
+                transparent 90deg,
+                rgba(0, 255, 136, 0.08) 135deg,
+                transparent 180deg,
+                rgba(139, 95, 255, 0.06) 225deg,
+                transparent 270deg,
+                rgba(0, 217, 255, 0.1) 315deg,
+                transparent 360deg
+            );
+            animation: quantum-spin 20s linear infinite;
+        }
+
+        @keyframes quantum-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .quantum-resonator:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            border-color: var(--biometric-glow);
+        }
+
+        .quantum-resonator.resonating {
+            animation: quantum-resonate 4s ease-in-out infinite;
+        }
+
+        @keyframes quantum-resonate {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 0 50px rgba(0, 217, 255, 0.3);
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.02);
+                box-shadow: 0 0 80px rgba(0, 255, 136, 0.4);
+            }
+        }
+
+        .consciousness-avatar {
+            font-size: 4.5em;
+            margin-bottom: 12px;
+            z-index: 1;
+            position: relative;
+            filter: drop-shadow(0 8px 24px rgba(0, 217, 255, 0.3));
+            transition: all 0.4s ease;
+        }
+
+        .quantum-resonator.resonating .consciousness-avatar {
+            animation: avatar-transcend 6s ease-in-out infinite;
+        }
+
+        @keyframes avatar-transcend {
+            0%, 100% { 
+                transform: translateY(0) scale(1);
+                filter: drop-shadow(0 8px 24px rgba(0, 217, 255, 0.3));
+            }
+            50% { 
+                transform: translateY(-10px) scale(1.05);
+                filter: drop-shadow(0 12px 36px rgba(0, 255, 136, 0.5));
+            }
+        }
+
+        .neural-signature {
+            font-size: 1em;
+            font-weight: 400;
+            color: var(--text-synaptic);
+            text-align: center;
+            letter-spacing: 0.02em;
+            z-index: 1;
+            position: relative;
+        }
+
+        .brainwave-display {
+            font-size: 0.75em;
+            color: var(--text-quantum);
+            margin-top: 6px;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .quantum-resonator.resonating .brainwave-display {
+            opacity: 1;
+            animation: brainwave-sync 8s ease-in-out infinite;
+        }
+
+        @keyframes brainwave-sync {
+            0%, 20% { content: "Alpha Waves"; }
+            20%, 40% { content: "Theta Sync"; }
+            40%, 60% { content: "Delta Deep"; }
+            60%, 80% { content: "Gamma Flow"; }
+            80%, 100% { content: "Neural Rest"; }
+        }
+
+        /* 轨道环系统 */
+        .orbital-matrix {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .quantum-orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border: 1px solid rgba(0, 217, 255, 0.08);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .orbit-alpha {
+            width: 280px;
+            height: 280px;
+            animation: orbit-alpha 30s linear infinite;
+        }
+
+        .orbit-beta {
+            width: 320px;
+            height: 320px;
+            animation: orbit-beta 45s linear infinite reverse;
+        }
+
+        .orbit-gamma {
+            width: 400px;
+            height: 400px;
+            animation: orbit-gamma 60s linear infinite;
+        }
+
+        @keyframes orbit-alpha {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes orbit-beta {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes orbit-gamma {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .quantum-resonator.resonating ~ .orbital-matrix .quantum-orbit {
+            border-color: rgba(0, 255, 136, 0.15);
+            animation-duration: 20s, 30s, 40s;
+        }
+
+        /* AI音频选择矩阵 */
+        .consciousness-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+            margin-bottom: 50px;
+        }
+
+        .neural-node {
+            background: var(--quantum-glass);
+            border: 1px solid var(--neural-mesh);
+            border-radius: 20px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            backdrop-filter: blur(25px);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neural-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(0, 217, 255, 0.05),
+                rgba(0, 255, 136, 0.03),
+                rgba(139, 95, 255, 0.05)
+            );
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .neural-node:hover::before,
+        .neural-node.activated::before {
+            opacity: 1;
+        }
+
+        .neural-node:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: var(--holographic-border);
+            box-shadow: 0 20px 60px rgba(0, 217, 255, 0.2);
+        }
+
+        .neural-node.activated {
+            background: linear-gradient(135deg, 
+                rgba(0, 217, 255, 0.1), 
+                rgba(0, 255, 136, 0.08));
+            border-color: var(--biometric-glow);
+            box-shadow: 0 16px 48px rgba(0, 255, 136, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .node-avatar {
+            font-size: 2.8em;
+            margin-bottom: 12px;
+            display: block;
+            transition: all 0.4s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .neural-node:hover .node-avatar {
+            transform: scale(1.1) rotateY(15deg);
+            filter: drop-shadow(0 8px 16px rgba(0, 217, 255, 0.4));
+        }
+
+        .node-identity {
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--text-neural);
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .node-frequency {
+            font-size: 0.75em;
+            color: var(--text-quantum);
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .neural-activity-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: rgba(0, 217, 255, 0.2);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .activity-wave {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--serotonin-green), transparent);
+            animation: activity-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes activity-pulse {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* 底部神经控制台 */
+        .neural-command-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-top: auto;
+            padding: 30px 0;
+        }
+
+        .consciousness-controls {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .neural-control {
+            width: 64px;
+            height: 64px;
+            background: var(--quantum-glass);
+            border: 1px solid var(--neural-mesh);
+            border-radius: 50%;
+            color: var(--text-neural);
+            font-size: 1.6em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(30px);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neural-control::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                transparent 0deg,
+                rgba(0, 217, 255, 0.1) 90deg,
+                transparent 180deg,
+                rgba(0, 255, 136, 0.08) 270deg,
+                transparent 360deg
+            );
+            animation: control-spin 8s linear infinite;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        @keyframes control-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .neural-control:hover::before {
+            opacity: 1;
+        }
+
+        .neural-control:hover {
+            transform: scale(1.1);
+            border-color: var(--holographic-border);
+            box-shadow: 0 12px 36px rgba(0, 217, 255, 0.3);
+        }
+
+        .primary-resonator {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--synaptic-blue), var(--serotonin-green));
+            border-color: transparent;
+            font-size: 1.8em;
+            color: var(--neural-primary);
+        }
+
+        .primary-resonator:hover {
+            transform: scale(1.05);
+            box-shadow: 0 16px 48px rgba(0, 255, 136, 0.4);
+        }
+
+        .wellness-nexus {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            padding: 20px 32px;
+            background: var(--quantum-glass);
+            border: 1px solid var(--holographic-border);
+            border-radius: 32px;
+            backdrop-filter: blur(30px);
+        }
+
+        .neural-metric {
+            text-align: center;
+            position: relative;
+        }
+
+        .metric-quantum {
+            font-size: 1.3em;
+            font-weight: 500;
+            background: linear-gradient(135deg, var(--synaptic-blue), var(--serotonin-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .metric-dimension {
+            font-size: 0.65em;
+            color: var(--text-ghost);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .synaptic-flow {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 2px;
+            background: rgba(0, 217, 255, 0.3);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+
+        .flow-current {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--biometric-glow), transparent);
+            animation: synaptic-current 2.5s ease-in-out infinite;
+        }
+
+        @keyframes synaptic-current {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* 全息粒子系统 */
+        .quantum-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .quantum-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--synaptic-blue);
+            border-radius: 50%;
+            animation: particle-drift 15s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes particle-drift {
+            0% {
+                transform: translateY(100vh) translateX(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) translateX(200px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 神经波纹效果 */
+        .neural-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 217, 255, 0.15), transparent 70%);
+            pointer-events: none;
+            animation: neural-expand 1.5s ease-out;
+        }
+
+        @keyframes neural-expand {
+            0% {
+                transform: scale(0);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(8);
+                opacity: 0;
+            }
+        }
+
+        /* 语音AI指示器 */
+        .voice-nexus {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            background: var(--quantum-glass);
+            border: 1px solid var(--neural-mesh);
+            border-radius: 24px;
+            backdrop-filter: blur(30px);
+            opacity: 0.7;
+            transition: all 0.4s ease;
+        }
+
+        .voice-nexus:hover {
+            opacity: 1;
+            border-color: var(--holographic-border);
+        }
+
+        .voice-wave {
+            width: 8px;
+            height: 8px;
+            background: var(--serotonin-green);
+            border-radius: 50%;
+            animation: voice-pulse 1.5s ease-in-out infinite;
+        }
+
+        .voice-wave:nth-child(2) { animation-delay: 0.2s; }
+        .voice-wave:nth-child(3) { animation-delay: 0.4s; }
+        .voice-wave:nth-child(4) { animation-delay: 0.6s; }
+
+        @keyframes voice-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.5); opacity: 1; }
+        }
+
+        .voice-prompt {
+            font-size: 0.8em;
+            color: var(--text-quantum);
+            letter-spacing: 0.05em;
+        }
+
+        /* 响应式神经系统 */
+        @media (max-width: 768px) {
+            .consciousness-interface {
+                padding: 20px;
+            }
+            
+            .neural-nexus {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .quantum-resonator {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .consciousness-avatar {
+                font-size: 3.5em;
+            }
+            
+            .consciousness-matrix {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+            }
+            
+            .neural-command-center {
+                flex-direction: column;
+                gap: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quantum-field"></div>
+    <div class="neural-grid"></div>
+    <div class="quantum-particles" id="quantumParticles"></div>
+
+    <div class="consciousness-interface">
+        <!-- 神经仪表盘 -->
+        <div class="neural-dashboard">
+            <div class="temporal-display">
+                <div class="quantum-time" id="quantumTime">--:--</div>
+                <div class="chronos-subtitle" id="chronosDate">Neural Time</div>
+            </div>
+            
+            <div class="biometric-cluster">
+                <div class="biometric-pod">
+                    <div class="biometric-value" id="heartRate">72</div>
+                    <div class="biometric-label">Heart Rate</div>
+                    <div class="neural-activity">
+                        <div class="neural-wave"></div>
+                    </div>
+                </div>
+                
+                <div class="biometric-pod">
+                    <div class="biometric-value" id="stressLevel">24</div>
+                    <div class="biometric-label">Cortisol</div>
+                    <div class="neural-activity">
+                        <div class="neural-wave" style="animation-delay: 0.5s;"></div>
+                    </div>
+                </div>
+                
+                <div class="biometric-pod">
+                    <div class="biometric-value" id="focusIndex">89</div>
+                    <div class="biometric-label">Alpha Sync</div>
+                    <div class="neural-activity">
+                        <div class="neural-wave" style="animation-delay: 1s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 意识核心 -->
+        <div class="consciousness-core">
+            <div class="neural-nexus">
+                <div class="orbital-matrix">
+                    <div class="quantum-orbit orbit-alpha"></div>
+                    <div class="quantum-orbit orbit-beta"></div>
+                    <div class="quantum-orbit orbit-gamma"></div>
+                </div>
+                
+                <div class="hologram-field" id="hologramField">
+                    <div class="quantum-resonator" id="quantumResonator">
+                        <span class="consciousness-avatar" id="consciousnessAvatar">📺</span>
+                        <div class="neural-signature" id="neuralSignature">新闻播报</div>
+                        <div class="brainwave-display" id="brainwaveDisplay">Alpha Waves</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI音频矩阵 -->
+            <div class="consciousness-matrix" id="consciousnessMatrix">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 神经控制台 -->
+        <div class="neural-command-center">
+            <div class="consciousness-controls">
+                <button class="neural-control" id="prevQuantum">⏮</button>
+                <button class="neural-control primary-resonator" id="resonanceToggle">▶</button>
+                <button class="neural-control" id="nextQuantum">⏭</button>
+            </div>
+
+            <div class="wellness-nexus">
+                <div class="neural-metric">
+                    <div class="metric-quantum" id="sessionDuration">00:00:00</div>
+                    <div class="metric-dimension">Neural Session</div>
+                    <div class="synaptic-flow">
+                        <div class="flow-current"></div>
+                    </div>
+                </div>
+                <div class="neural-metric">
+                    <div class="metric-quantum" id="wellness">94%</div>
+                    <div class="metric-dimension">Consciousness</div>
+                    <div class="synaptic-flow">
+                        <div class="flow-current" style="animation-delay: 0.8s;"></div>
+                    </div>
+                </div>
+                <div class="neural-metric">
+                    <div class="metric-quantum" id="coherence">7.8Hz</div>
+                    <div class="metric-dimension">Theta State</div>
+                    <div class="synaptic-flow">
+                        <div class="flow-current" style="animation-delay: 1.6s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 语音AI -->
+    <div class="voice-nexus" id="voiceNexus">
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <div class="voice-wave"></div>
+        <span class="voice-prompt">"Neural, 播放海浪声" · AI Voice Ready</span>
+    </div>
+
+    <script>
+        const consciousnessData = [
+            { id: 'news', identity: '新闻播报', avatar: '📺', url: './audio/news.mp3', frequency: '7.17 Hz', neurotransmitter: 'dopamine' },
+            { id: 'speech', identity: '领导讲话', avatar: '🎤', url: './audio/xiaozhang.mp3', frequency: '9.02 Hz', neurotransmitter: 'acetylcholine' },
+            { id: 'white', identity: '白噪音', avatar: '📻', url: './audio/white_noise.mp3', frequency: '1.00 Hz', neurotransmitter: 'gaba' },
+            { id: 'pink', identity: '粉噪音', avatar: '🌸', url: './audio/pink_noise.mp3', frequency: '0.75 Hz', neurotransmitter: 'serotonin' },
+            { id: 'brown', identity: '棕噪音', avatar: '🤎', url: './audio/brown_noise.mp3', frequency: '0.50 Hz', neurotransmitter: 'melatonin' },
+            { id: 'rain', identity: '雨声', avatar: '🌧️', url: './audio/rain.mp3', frequency: '2.30 Hz', neurotransmitter: 'oxytocin' },
+            { id: 'ocean', identity: '海浪', avatar: '🌊', url: './audio/ocean_waves.mp3', frequency: '0.25 Hz', neurotransmitter: 'endorphin' },
+            { id: 'birds', identity: '鸟鸣', avatar: '🐦', url: './audio/birds_chirping.mp3', frequency: '3.14 Hz', neurotransmitter: 'dopamine' },
+            { id: 'fire', identity: '火焰', avatar: '🔥', url: './audio/fireplace.mp3', frequency: '1.62 Hz', neurotransmitter: 'norepinephrine' }
+        ];
+
+        // 量子状态系统
+        let currentIndex = 0;
+        let currentAudio = null;
+        let audioContext = null;
+        let analyser = null;
+        let isResonating = false;
+        let sessionStartTime = Date.now();
+        let totalResonanceTime = 0;
+
+        // 生物指标模拟
+        let simulatedHeartRate = 72;
+        let simulatedStress = 24;
+        let simulatedFocus = 89;
+        let wellnessIndex = 94;
+        let brainwaveFreq = 7.8;
+
+        // 神经可视化
+        let particles = [];
+        let visualizationActive = false;
+
+        // 初始化量子系统
+        function initializeQuantumSystem() {
+            setupParticleField();
+            setupAudioContext();
+            renderConsciousnessMatrix();
+            loadConsciousness(currentIndex);
+            initializeNeuralControls();
+            startTemporalFlow();
+            startBiometricSimulation();
+            startVoiceAI();
+
+            // 3秒后启动共振
+            setTimeout(() => {
+                activateResonance();
+            }, 3000);
+        }
+
+        // 设置粒子场
+        function setupParticleField() {
+            const particleField = document.getElementById('quantumParticles');
+            
+            function createQuantumParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'quantum-particle';
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                
+                // 随机颜色
+                const colors = ['#00D9FF', '#00FF88', '#8B5FFF', '#FF6B9D'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                particleField.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.remove();
+                    }
+                }, 15000);
+            }
+            
+            // 创建初始粒子
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => createQuantumParticle(), Math.random() * 5000);
+            }
+            
+            // 持续创建粒子
+            setInterval(createQuantumParticle, 800);
+        }
+
+        // 设置音频上下文
+        function setupAudioContext() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 128;
+            } catch (e) {
+                console.warn('Web Audio API not supported');
+            }
+        }
+
+        // 渲染意识矩阵
+        function renderConsciousnessMatrix() {
+            const matrix = document.getElementById('consciousnessMatrix');
+            matrix.innerHTML = consciousnessData.map((data, index) => `
+                <div class="neural-node ${index === currentIndex ? 'activated' : ''}" 
+                     onclick="selectConsciousness(${index})">
+                    <span class="node-avatar">${data.avatar}</span>
+                    <div class="node-identity">${data.identity}</div>
+                    <div class="node-frequency">${data.frequency}</div>
+                    <div class="neural-activity-indicator">
+                        <div class="activity-wave"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 加载意识状态
+        function loadConsciousness(index) {
+            const consciousness = consciousnessData[index];
+            
+            // 更新主界面
+            document.getElementById('consciousnessAvatar').textContent = consciousness.avatar;
+            document.getElementById('neuralSignature').textContent = consciousness.identity;
+            
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // 创建新音频
+            currentAudio = new Audio(consciousness.url);
+            currentAudio.loop = true;
+            currentAudio.volume = 0.7;
+            
+            // 连接音频分析器
+            if (audioContext && analyser) {
+                try {
+                    const source = audioContext.createMediaElementSource(currentAudio);
+                    source.connect(analyser);
+                    analyser.connect(audioContext.destination);
+                } catch (e) {
+                    console.warn('Audio context connection failed');
+                }
+            }
+            
+            currentAudio.addEventListener('play', () => {
+                isResonating = true;
+                updateResonanceState();
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            });
+            
+            currentAudio.addEventListener('pause', () => {
+                isResonating = false;
+                updateResonanceState();
+            });
+            
+            updateConsciousnessMatrix();
+        }
+
+        // 激活共振
+        async function activateResonance() {
+            if (!currentAudio) return;
+            
+            try {
+                await currentAudio.play();
+            } catch (error) {
+                console.warn('共振激活失败:', error);
+            }
+        }
+
+        // 切换共振状态
+        function toggleResonance() {
+            if (isResonating) {
+                currentAudio.pause();
+            } else {
+                activateResonance();
+            }
+        }
+
+        // 选择意识状态
+        function selectConsciousness(index) {
+            currentIndex = index;
+            const wasResonating = isResonating;
+            
+            loadConsciousness(index);
+            
+            if (wasResonating) {
+                setTimeout(() => activateResonance(), 100);
+            }
+        }
+
+        // 上一个/下一个意识状态
+        function previousConsciousness() {
+            currentIndex = (currentIndex - 1 + consciousnessData.length) % consciousnessData.length;
+            selectConsciousness(currentIndex);
+        }
+
+        function nextConsciousness() {
+            currentIndex = (currentIndex + 1) % consciousnessData.length;
+            selectConsciousness(currentIndex);
+        }
+
+        // 更新共振状态
+        function updateResonanceState() {
+            const resonator = document.getElementById('quantumResonator');
+            const hologram = document.getElementById('hologramField');
+            const toggleBtn = document.getElementById('resonanceToggle');
+            
+            if (isResonating) {
+                resonator.classList.add('resonating');
+                hologram.classList.add('activated');
+                toggleBtn.textContent = '⏸';
+            } else {
+                resonator.classList.remove('resonating');
+                hologram.classList.remove('activated');
+                toggleBtn.textContent = '▶';
+            }
+        }
+
+        // 更新意识矩阵
+        function updateConsciousnessMatrix() {
+            document.querySelectorAll('.neural-node').forEach((node, index) => {
+                node.classList.toggle('activated', index === currentIndex);
+            });
+        }
+
+        // 创建神经波纹
+        function createNeuralRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'neural-ripple';
+            ripple.style.left = (x - 40) + 'px';
+            ripple.style.top = (y - 40) + 'px';
+            ripple.style.width = '80px';
+            ripple.style.height = '80px';
+            
+            document.body.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 1500);
+        }
+
+        // 初始化神经控制
+        function initializeNeuralControls() {
+            document.getElementById('resonanceToggle').addEventListener('click', toggleResonance);
+            document.getElementById('prevQuantum').addEventListener('click', previousConsciousness);
+            document.getElementById('nextQuantum').addEventListener('click', nextConsciousness);
+            
+            // 主共振器点击
+            document.getElementById('quantumResonator').addEventListener('click', (e) => {
+                toggleResonance();
+                createNeuralRipple(e.clientX, e.clientY);
+            });
+            
+            // 键盘控制
+            document.addEventListener('keydown', (e) => {
+                switch (e.code) {
+                    case 'Space':
+                        e.preventDefault();
+                        toggleResonance();
+                        break;
+                    case 'ArrowLeft':
+                        previousConsciousness();
+                        break;
+                    case 'ArrowRight':
+                        nextConsciousness();
+                        break;
+                }
+            });
+        }
+
+        // 启动时间流
+        function startTemporalFlow() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('quantumTime').textContent = 
+                    now.toLocaleTimeString('zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit' });
+                document.getElementById('chronosDate').textContent = 
+                    now.toLocaleDateString('zh-CN').replace(/\//g, ' · ');
+                
+                // 更新会话时间
+                if (isResonating) {
+                    totalResonanceTime++;
+                }
+                const hours = Math.floor(totalResonanceTime / 3600);
+                const minutes = Math.floor((totalResonanceTime % 3600) / 60);
+                const seconds = totalResonanceTime % 60;
+                document.getElementById('sessionDuration').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // 启动生物指标模拟
+        function startBiometricSimulation() {
+            setInterval(() => {
+                if (isResonating) {
+                    // 模拟健康改善
+                    if (simulatedHeartRate > 55) {
+                        simulatedHeartRate -= Math.random() * 0.8;
+                    }
+                    if (simulatedStress > 5) {
+                        simulatedStress -= Math.random() * 0.3;
+                    }
+                    if (simulatedFocus < 95) {
+                        simulatedFocus += Math.random() * 0.5;
+                    }
+                    if (wellnessIndex < 98) {
+                        wellnessIndex += Math.random() * 0.2;
+                    }
+                    brainwaveFreq = 4 + Math.random() * 4; // Theta range
+                } else {
+                    // 轻微回归
+                    if (simulatedHeartRate < 72) {
+                        simulatedHeartRate += Math.random() * 0.1;
+                    }
+                }
+                
+                document.getElementById('heartRate').textContent = Math.round(simulatedHeartRate);
+                document.getElementById('stressLevel').textContent = Math.round(simulatedStress);
+                document.getElementById('focusIndex').textContent = Math.round(simulatedFocus);
+                document.getElementById('wellness').textContent = Math.round(wellnessIndex) + '%';
+                document.getElementById('coherence').textContent = brainwaveFreq.toFixed(1) + 'Hz';
+            }, 2000);
+        }
+
+        // 启动语音AI
+        function startVoiceAI() {
+            const voiceNexus = document.getElementById('voiceNexus');
+            
+            // 模拟语音识别
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                recognition.lang = 'zh-CN';
+                
+                recognition.onresult = function(event) {
+                    const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                    
+                    if (command.includes('播放') || command.includes('开始')) {
+                        activateResonance();
+                    } else if (command.includes('暂停') || command.includes('停止')) {
+                        currentAudio.pause();
+                    } else if (command.includes('下一个')) {
+                        nextConsciousness();
+                    } else if (command.includes('上一个')) {
+                        previousConsciousness();
+                    }
+                };
+                
+                voiceNexus.addEventListener('click', () => {
+                    recognition.start();
+                });
+            }
+        }
+
+        // 启动量子系统
+        document.addEventListener('DOMContentLoaded', initializeQuantumSystem);
+
+        // 页面可见性处理
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // 页面隐藏时保持音频播放
+            } else {
+                // 页面重新可见时恢复动画
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

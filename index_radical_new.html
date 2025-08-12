@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小噪音 - 情绪空间</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        :root {
+            /* 基础色彩系统 */
+            --primary-dark: #0a0a0a;
+            --surface-dark: rgba(20, 20, 20, 0.8);
+            --text-primary: rgba(255, 255, 255, 0.95);
+            --text-secondary: rgba(255, 255, 255, 0.4);
+            --accent-glow: rgba(255, 255, 255, 0.1);
+            
+            /* 情绪色彩映射 */
+            --calm-blue: #1e40af;
+            --peaceful-green: #059669;
+            --warm-amber: #d97706;
+            --gentle-purple: #7c3aed;
+            --soft-pink: #db2777;
+            --deep-teal: #0d9488;
+            --earth-brown: #92400e;
+            --sky-cyan: #0891b2;
+            --fire-red: #dc2626;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 情绪背景系统 */
+        .emotion-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            transition: all 2s cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: 1;
+        }
+
+        /* 核心呼吸界面 */
+        .breath-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .breath-circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), transparent 70%);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .breath-circle:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 0 100px rgba(255, 255, 255, 0.1),
+                inset 0 0 100px rgba(255, 255, 255, 0.05);
+        }
+
+        .breath-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .emotion-icon {
+            font-size: 3em;
+            margin-bottom: 8px;
+            transition: all 0.8s ease;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+        }
+
+        .emotion-label {
+            font-size: 0.8em;
+            font-weight: 300;
+            color: var(--text-secondary);
+            letter-spacing: 0.1em;
+            text-align: center;
+        }
+
+        /* 呼吸动画环 */
+        .breath-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            opacity: 0.6;
+        }
+
+        .ring-1 {
+            width: 200px;
+            height: 200px;
+            animation: breathe-slow 4s ease-in-out infinite;
+        }
+
+        .ring-2 {
+            width: 250px;
+            height: 250px;
+            animation: breathe-slow 4s ease-in-out infinite 0.5s;
+        }
+
+        .ring-3 {
+            width: 350px;
+            height: 350px;
+            animation: breathe-slow 4s ease-in-out infinite 1s;
+        }
+
+        @keyframes breathe-slow {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        /* 情绪选择器 */
+        .emotion-selector {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 20;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .emotion-selector.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .emotion-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+        }
+
+        .emotion-option:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .emotion-option.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+        }
+
+        /* 播放状态指示 */
+        .play-indicator {
+            position: fixed;
+            top: 60px;
+            right: 60px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 20;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .play-indicator.visible {
+            opacity: 1;
+        }
+
+        .play-indicator.playing {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        /* 时间显示 */
+        .time-display {
+            position: fixed;
+            top: 60px;
+            left: 60px;
+            font-size: 0.9em;
+            font-weight: 200;
+            color: var(--text-secondary);
+            z-index: 20;
+            opacity: 0.6;
+            letter-spacing: 0.05em;
+        }
+
+        /* 沉浸模式指引 */
+        .immersion-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.6;
+            opacity: 0.5;
+            animation: fade-pulse 8s ease-in-out infinite;
+            z-index: 15;
+        }
+
+        @keyframes fade-pulse {
+            0%, 20%, 80%, 100% {
+                opacity: 0.3;
+            }
+            40%, 60% {
+                opacity: 0.6;
+            }
+        }
+
+        /* 音频可视化 */
+        .audio-visualizer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.4;
+        }
+
+        /* 手势反馈 */
+        .gesture-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 70%);
+            pointer-events: none;
+            transform: scale(0);
+            animation: ripple-expand 1s ease-out;
+        }
+
+        @keyframes ripple-expand {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* 情绪状态变化 */
+        .emotion-news { background: radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.3), transparent 70%); }
+        .emotion-speech { background: radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.3), transparent 70%); }
+        .emotion-white { background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1), transparent 70%); }
+        .emotion-pink { background: radial-gradient(circle at 50% 50%, rgba(219, 39, 119, 0.3), transparent 70%); }
+        .emotion-brown { background: radial-gradient(circle at 50% 50%, rgba(146, 64, 14, 0.3), transparent 70%); }
+        .emotion-rain { background: radial-gradient(circle at 50% 50%, rgba(8, 145, 178, 0.3), transparent 70%); }
+        .emotion-ocean { background: radial-gradient(circle at 50% 50%, rgba(13, 148, 136, 0.3), transparent 70%); }
+        .emotion-birds { background: radial-gradient(circle at 50% 50%, rgba(5, 150, 105, 0.3), transparent 70%); }
+        .emotion-fire { background: radial-gradient(circle at 50% 50%, rgba(220, 38, 38, 0.3), transparent 70%); }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .breath-circle {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .breath-core {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .emotion-icon {
+                font-size: 2.5em;
+            }
+            
+            .emotion-selector {
+                bottom: 40px;
+                gap: 15px;
+            }
+            
+            .emotion-option {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2em;
+            }
+            
+            .time-display,
+            .play-indicator {
+                top: 40px;
+            }
+            
+            .time-display {
+                left: 40px;
+            }
+            
+            .play-indicator {
+                right: 40px;
+            }
+        }
+
+        /* 专注模式 */
+        .focus-mode .emotion-selector,
+        .focus-mode .time-display,
+        .focus-mode .play-indicator,
+        .focus-mode .immersion-hint {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 情绪背景画布 -->
+    <div class="emotion-canvas" id="emotionCanvas"></div>
+    
+    <!-- 音频可视化 -->
+    <canvas class="audio-visualizer" id="audioVisualizer"></canvas>
+    
+    <!-- 时间显示 -->
+    <div class="time-display" id="timeDisplay">--:--</div>
+    
+    <!-- 播放状态指示 -->
+    <div class="play-indicator" id="playIndicator">◐</div>
+    
+    <!-- 核心呼吸界面 -->
+    <div class="breath-container">
+        <div class="breath-circle" id="breathCircle">
+            <div class="breath-ring ring-1"></div>
+            <div class="breath-ring ring-2"></div>
+            <div class="breath-ring ring-3"></div>
+            
+            <div class="breath-core" id="breathCore">
+                <div class="emotion-icon" id="emotionIcon">📺</div>
+                <div class="emotion-label" id="emotionLabel">新闻播报</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 情绪选择器 -->
+    <div class="emotion-selector" id="emotionSelector">
+        <div class="emotion-option active" data-emotion="0" title="新闻播报">📺</div>
+        <div class="emotion-option" data-emotion="1" title="领导讲话">🎤</div>
+        <div class="emotion-option" data-emotion="2" title="白噪音">📻</div>
+        <div class="emotion-option" data-emotion="3" title="粉噪音">🌸</div>
+        <div class="emotion-option" data-emotion="4" title="棕噪音">🤎</div>
+        <div class="emotion-option" data-emotion="5" title="雨声">🌧️</div>
+        <div class="emotion-option" data-emotion="6" title="海浪">🌊</div>
+        <div class="emotion-option" data-emotion="7" title="鸟鸣">🐦</div>
+        <div class="emotion-option" data-emotion="8" title="火焰">🔥</div>
+    </div>
+    
+    <!-- 沉浸模式提示 -->
+    <div class="immersion-hint" id="immersionHint">
+        轻触中心开始 · 左右滑动切换 · 长按进入专注模式<br>
+        让声音引导你的呼吸
+    </div>
+
+    <script>
+        // 音频数据
+        const emotionAudio = [
+            { id: 'news', title: '新闻播报', icon: '📺', url: './audio/news.mp3', duration: '7:17', emotion: 'news' },
+            { id: 'speech', title: '领导讲话', icon: '🎤', url: './audio/xiaozhang.mp3', duration: '9:02', emotion: 'speech' },
+            { id: 'white', title: '白噪音', icon: '📻', url: './audio/white_noise.mp3', duration: '1:00', emotion: 'white' },
+            { id: 'pink', title: '粉噪音', icon: '🌸', url: './audio/pink_noise.mp3', duration: '1:00', emotion: 'pink' },
+            { id: 'brown', title: '棕噪音', icon: '🤎', url: './audio/brown_noise.mp3', duration: '1:00', emotion: 'brown' },
+            { id: 'rain', title: '雨声', icon: '🌧️', url: './audio/rain.mp3', duration: '1:00', emotion: 'rain' },
+            { id: 'ocean', title: '海浪', icon: '🌊', url: './audio/ocean_waves.mp3', duration: '1:00', emotion: 'ocean' },
+            { id: 'birds', title: '鸟鸣', icon: '🐦', url: './audio/birds_chirping.mp3', duration: '1:00', emotion: 'birds' },
+            { id: 'fire', title: '火焰', icon: '🔥', url: './audio/fireplace.mp3', duration: '1:00', emotion: 'fire' }
+        ];
+
+        // 应用状态
+        let currentEmotion = 0;
+        let currentAudio = null;
+        let audioContext = null;
+        let analyser = null;
+        let dataArray = null;
+        let isPlaying = false;
+        let isFocusMode = false;
+        
+        // 触摸交互
+        let touchStart = null;
+        let longPressTimer = null;
+
+        // 初始化应用
+        function init() {
+            setupAudioContext();
+            setupCanvas();
+            loadEmotion(currentEmotion);
+            bindInteractions();
+            updateTimeDisplay();
+            showEmotionSelector();
+            
+            // 3秒后自动播放
+            setTimeout(() => {
+                playEmotion();
+            }, 3000);
+        }
+
+        // 设置音频上下文
+        function setupAudioContext() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 128;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+            } catch (e) {
+                console.warn('Web Audio API not supported');
+            }
+        }
+
+        // 设置画布
+        function setupCanvas() {
+            const canvas = document.getElementById('audioVisualizer');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+            
+            startVisualization();
+        }
+
+        // 加载情绪音频
+        function loadEmotion(index) {
+            const emotion = emotionAudio[index];
+            
+            // 更新UI
+            document.getElementById('emotionIcon').textContent = emotion.icon;
+            document.getElementById('emotionLabel').textContent = emotion.title;
+            
+            // 更新背景
+            const canvas = document.getElementById('emotionCanvas');
+            canvas.className = `emotion-canvas emotion-${emotion.emotion}`;
+            
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // 创建新音频
+            currentAudio = new Audio(emotion.url);
+            currentAudio.loop = true;
+            currentAudio.volume = 0.7;
+            
+            // 连接音频分析器
+            if (audioContext && analyser) {
+                try {
+                    const source = audioContext.createMediaElementSource(currentAudio);
+                    source.connect(analyser);
+                    analyser.connect(audioContext.destination);
+                } catch (e) {
+                    console.warn('Audio context connection failed');
+                }
+            }
+            
+            currentAudio.addEventListener('play', () => {
+                isPlaying = true;
+                updatePlayState();
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            });
+            
+            currentAudio.addEventListener('pause', () => {
+                isPlaying = false;
+                updatePlayState();
+            });
+            
+            updateEmotionSelector();
+        }
+
+        // 播放情绪音频
+        async function playEmotion() {
+            if (!currentAudio) return;
+            
+            try {
+                await currentAudio.play();
+            } catch (error) {
+                console.warn('播放失败:', error);
+            }
+        }
+
+        // 暂停播放
+        function pauseEmotion() {
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+        }
+
+        // 切换播放状态
+        function togglePlay() {
+            if (isPlaying) {
+                pauseEmotion();
+            } else {
+                playEmotion();
+            }
+        }
+
+        // 切换情绪
+        function switchEmotion(index) {
+            if (index === currentEmotion) return;
+            
+            currentEmotion = index;
+            const wasPlaying = isPlaying;
+            
+            loadEmotion(index);
+            
+            if (wasPlaying) {
+                setTimeout(() => playEmotion(), 200);
+            }
+        }
+
+        // 更新播放状态
+        function updatePlayState() {
+            const indicator = document.getElementById('playIndicator');
+            
+            if (isPlaying) {
+                indicator.classList.add('visible', 'playing');
+                indicator.textContent = '◑';
+            } else {
+                indicator.classList.add('visible');
+                indicator.classList.remove('playing');
+                indicator.textContent = '◐';
+            }
+        }
+
+        // 更新情绪选择器
+        function updateEmotionSelector() {
+            document.querySelectorAll('.emotion-option').forEach((option, index) => {
+                option.classList.toggle('active', index === currentEmotion);
+            });
+        }
+
+        // 显示情绪选择器
+        function showEmotionSelector() {
+            setTimeout(() => {
+                document.getElementById('emotionSelector').classList.add('visible');
+            }, 1000);
+        }
+
+        // 切换专注模式
+        function toggleFocusMode() {
+            isFocusMode = !isFocusMode;
+            document.body.classList.toggle('focus-mode', isFocusMode);
+            
+            if (isFocusMode) {
+                document.getElementById('immersionHint').textContent = '专注模式已开启 · 再次长按退出';
+            } else {
+                document.getElementById('immersionHint').innerHTML = 
+                    '轻触中心开始 · 左右滑动切换 · 长按进入专注模式<br>让声音引导你的呼吸';
+            }
+        }
+
+        // 更新时间显示
+        function updateTimeDisplay() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('timeDisplay').textContent = timeStr;
+            
+            setTimeout(updateTimeDisplay, 60000);
+        }
+
+        // 创建手势反馈
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'gesture-ripple';
+            ripple.style.left = (x - 50) + 'px';
+            ripple.style.top = (y - 50) + 'px';
+            ripple.style.width = '100px';
+            ripple.style.height = '100px';
+            
+            document.body.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 1000);
+        }
+
+        // 绑定交互事件
+        function bindInteractions() {
+            const breathCircle = document.getElementById('breathCircle');
+            
+            // 触摸事件
+            breathCircle.addEventListener('touchstart', handleTouchStart);
+            breathCircle.addEventListener('touchmove', handleTouchMove);
+            breathCircle.addEventListener('touchend', handleTouchEnd);
+            
+            // 鼠标事件
+            breathCircle.addEventListener('mousedown', handleMouseStart);
+            breathCircle.addEventListener('mousemove', handleMouseMove);
+            breathCircle.addEventListener('mouseup', handleMouseEnd);
+            
+            // 情绪选择器
+            document.querySelectorAll('.emotion-option').forEach((option, index) => {
+                option.addEventListener('click', () => switchEmotion(index));
+            });
+            
+            // 键盘控制
+            document.addEventListener('keydown', handleKeyboard);
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStart = { 
+                x: touch.clientX, 
+                y: touch.clientY, 
+                time: Date.now() 
+            };
+            
+            createRipple(touch.clientX, touch.clientY);
+            
+            // 长按检测
+            longPressTimer = setTimeout(() => {
+                toggleFocusMode();
+                if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+            }, 1000);
+        }
+
+        function handleTouchMove(e) {
+            if (!touchStart) return;
+            
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - touchStart.x;
+            const distance = Math.abs(deltaX);
+            
+            if (distance > 30) {
+                clearTimeout(longPressTimer);
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchStart) return;
+            
+            clearTimeout(longPressTimer);
+            
+            const touch = e.changedTouches[0];
+            const deltaX = touch.clientX - touchStart.x;
+            const deltaY = touch.clientY - touchStart.y;
+            const duration = Date.now() - touchStart.time;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (duration < 300 && distance < 30) {
+                // 点击
+                togglePlay();
+            } else if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                // 左右滑动
+                const direction = deltaX > 0 ? 1 : -1;
+                const nextEmotion = (currentEmotion + direction + emotionAudio.length) % emotionAudio.length;
+                switchEmotion(nextEmotion);
+            }
+            
+            touchStart = null;
+        }
+
+        function handleMouseStart(e) {
+            touchStart = { 
+                x: e.clientX, 
+                y: e.clientY, 
+                time: Date.now() 
+            };
+            
+            createRipple(e.clientX, e.clientY);
+            
+            longPressTimer = setTimeout(() => {
+                toggleFocusMode();
+            }, 1000);
+        }
+
+        function handleMouseMove(e) {
+            if (!touchStart) return;
+            
+            const distance = Math.abs(e.clientX - touchStart.x);
+            if (distance > 30) {
+                clearTimeout(longPressTimer);
+            }
+        }
+
+        function handleMouseEnd(e) {
+            if (!touchStart) return;
+            
+            clearTimeout(longPressTimer);
+            
+            const deltaX = e.clientX - touchStart.x;
+            const deltaY = e.clientY - touchStart.y;
+            const duration = Date.now() - touchStart.time;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (duration < 300 && distance < 30) {
+                togglePlay();
+            } else if (Math.abs(deltaX) > 50) {
+                const direction = deltaX > 0 ? 1 : -1;
+                const nextEmotion = (currentEmotion + direction + emotionAudio.length) % emotionAudio.length;
+                switchEmotion(nextEmotion);
+            }
+            
+            touchStart = null;
+        }
+
+        function handleKeyboard(e) {
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'ArrowLeft':
+                    switchEmotion((currentEmotion - 1 + emotionAudio.length) % emotionAudio.length);
+                    break;
+                case 'ArrowRight':
+                    switchEmotion((currentEmotion + 1) % emotionAudio.length);
+                    break;
+                case 'KeyF':
+                    toggleFocusMode();
+                    break;
+            }
+        }
+
+        // 音频可视化
+        function startVisualization() {
+            const canvas = document.getElementById('audioVisualizer');
+            const ctx = canvas.getContext('2d');
+            
+            function animate() {
+                if (!ctx) return;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (isPlaying && analyser && dataArray) {
+                    analyser.getByteFrequencyData(dataArray);
+                    drawVisualization(ctx, canvas.width, canvas.height);
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        function drawVisualization(ctx, width, height) {
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const maxRadius = Math.min(width, height) * 0.4;
+            
+            // 绘制频谱环
+            for (let i = 0; i < dataArray.length; i++) {
+                const angle = (i / dataArray.length) * Math.PI * 2;
+                const amplitude = dataArray[i] / 255;
+                const radius = maxRadius * (0.8 + amplitude * 0.4);
+                
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 1 + amplitude * 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${amplitude * 0.6})`;
+                ctx.fill();
+            }
+        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // 页面可见性变化
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && isPlaying) {
+                // 页面隐藏时保持播放
+            }
+        });
+    </script>
+</body>
+</html>
